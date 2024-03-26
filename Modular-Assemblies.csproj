@@ -1,0 +1,151 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Mal.Mdk2.ModAnalyzers.2.1.8\build\Mal.MDK2.ModAnalyzers.props" Condition="Exists('packages\Mal.Mdk2.ModAnalyzers.2.1.8\build\Mal.MDK2.ModAnalyzers.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DF56324C-D61A-4334-B7EF-35F2EA237BB3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>ClassLibrary</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Modular_Assemblies</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+    <Content Include="metadata.mod" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".git\COMMIT_EDITMSG" />
+    <None Include=".git\config" />
+    <None Include=".git\description" />
+    <None Include=".git\FETCH_HEAD" />
+    <None Include=".git\HEAD" />
+    <None Include=".git\hooks\applypatch-msg.sample" />
+    <None Include=".git\hooks\commit-msg.sample" />
+    <None Include=".git\hooks\fsmonitor-watchman.sample" />
+    <None Include=".git\hooks\post-update.sample" />
+    <None Include=".git\hooks\pre-applypatch.sample" />
+    <None Include=".git\hooks\pre-commit.sample" />
+    <None Include=".git\hooks\pre-merge-commit.sample" />
+    <None Include=".git\hooks\pre-push.sample" />
+    <None Include=".git\hooks\pre-rebase.sample" />
+    <None Include=".git\hooks\pre-receive.sample" />
+    <None Include=".git\hooks\prepare-commit-msg.sample" />
+    <None Include=".git\hooks\push-to-checkout.sample" />
+    <None Include=".git\hooks\update.sample" />
+    <None Include=".git\index" />
+    <None Include=".git\info\exclude" />
+    <None Include=".git\logs\HEAD" />
+    <None Include=".git\logs\refs\heads\main" />
+    <None Include=".git\logs\refs\remotes\origin\HEAD" />
+    <None Include=".git\logs\refs\remotes\origin\main" />
+    <None Include=".git\objects\0a\020fdf099056cfdfb5f0f4351688f40b8d186e" />
+    <None Include=".git\objects\12\0b0d6f73e5aa70e61b35062b05063e12941504" />
+    <None Include=".git\objects\1a\fb2214fe02e83dd6ae17455f8fe0fbf52d3d43" />
+    <None Include=".git\objects\22\61982d0e474088361898239fdd40ccb5ebe386" />
+    <None Include=".git\objects\25\c68e7731013a4c62505a3b0872a7890a025e12" />
+    <None Include=".git\objects\31\4462a2afec4a8bfab8bba6e531f1ea355ed9b3" />
+    <None Include=".git\objects\41\cd402d09fbe374fdf20e60f38e3b0fa7635741" />
+    <None Include=".git\objects\47\aa2efe5341dfd8430e77c1e84b7e92ee530c2d" />
+    <None Include=".git\objects\58\dfd1466e6c1f9b5e09db15e488fe20a9ef3378" />
+    <None Include=".git\objects\6a\2ee0f2766225af7b09b2b610d87e627b2e46b0" />
+    <None Include=".git\objects\7a\bb2f68524f2ba9bc9c06018584845e56dd5d03" />
+    <None Include=".git\objects\82\f9555ce4f1e48383912acc451931ecec708e61" />
+    <None Include=".git\objects\91\370d530013c4026e1458a0ad23e9d26fcb630b" />
+    <None Include=".git\objects\96\0caaafca0952bf603b059cc63ca062b128d6a3" />
+    <None Include=".git\objects\a9\1b21158acd53394bd3a49f6aab655f9e0c058d" />
+    <None Include=".git\objects\a9\5cc56aa93d058348fe3aa3142bfd397dd8eee7" />
+    <None Include=".git\objects\ab\685c4132fe2505c24bf3baa588d642d06c3e45" />
+    <None Include=".git\objects\ad\36a04433a66a5fab586931fa5d9806bf414f18" />
+    <None Include=".git\objects\ad\deceb6ea8ee834c55eeb3e24279d2ea65374a2" />
+    <None Include=".git\objects\b3\98ca09a9a6fffcce91c2265a4eeabe044abaa8" />
+    <None Include=".git\objects\b7\b04e6fd368cb9dc415f0893b9914b4a24efd9e" />
+    <None Include=".git\objects\df\139abb1aadd6ad8ed9847c160697b77b1d5c28" />
+    <None Include=".git\objects\df\8ee39e1dee9d9e51b9769dcfefd2a979eaa7c3" />
+    <None Include=".git\objects\e7\b8bd41695294ce48111be64328d004c7c7d1e7" />
+    <None Include=".git\objects\e9\6bf991a6fa151f77bce2ee12d15448fe942727" />
+    <None Include=".git\objects\fa\a33deaf1cca9a6c6dee45e8f2d6276f4c8ce53" />
+    <None Include=".git\objects\ff\edf10bdb98c5bf35ba6f880f4ff933aefb74f7" />
+    <None Include=".git\objects\pack\pack-8693f88c63e74471e1111840a4e889b6eada845a.idx" />
+    <None Include=".git\objects\pack\pack-8693f88c63e74471e1111840a4e889b6eada845a.pack" />
+    <None Include=".git\ORIG_HEAD" />
+    <None Include=".git\packed-refs" />
+    <None Include=".git\refs\heads\main" />
+    <None Include=".git\refs\remotes\origin\HEAD" />
+    <None Include=".git\refs\remotes\origin\main" />
+    <None Include=".vs\Modular-Assemblies\FileContentIndex\5ab1390f-2ee2-4f76-8ed2-a4554048f39d.vsidx" />
+    <None Include=".vs\Modular-Assemblies\v17\.wsuo" />
+    <None Include=".vs\Modular-Assemblies\v17\DocumentLayout.json" />
+    <None Include=".vs\slnx.sqlite" />
+    <None Include=".vs\VSWorkspaceState.json" />
+    <None Include="copy to DS and client.bat" />
+    <None Include="Data\Scripts\AssemblyScripts\Client\ClientSync.cs.disabled" />
+    <None Include="Data\Scripts\AssemblyScripts\Client\ClientSyncDefinitions.cs.disabled" />
+    <None Include="Data\Scripts\AssemblyScripts\pressrtest.cs.disabled" />
+    <None Include="packages.config" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Scripts\AssemblyScripts\Assemblies_SessionInit.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPart.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPartManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\DebugDraw\DebugDrawManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiDefinitions.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiHandler.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionDefs.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionHandler.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\ModularDefiniton.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\PhysicalAssembly.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".git\objects\info\" />
+    <Folder Include=".git\refs\tags\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="packages\Mal.Mdk2.ModAnalyzers.2.1.8\analyzers\dotnet\cs\Mal.Mdk2.ModAnalyzers.dll" />
+    <Analyzer Include="packages\Mal.Mdk2.ModAnalyzers.2.1.8\analyzers\dotnet\cs\Microsoft.Extensions.FileSystemGlobbing.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Mal.Mdk2.ModAnalyzers.2.1.8\build\Mal.MDK2.ModAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Mal.Mdk2.ModAnalyzers.2.1.8\build\Mal.MDK2.ModAnalyzers.props'))" />
+    <Error Condition="!Exists('packages\Mal.Mdk2.References.2.1.9\build\Mal.Mdk2.References.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Mal.Mdk2.References.2.1.9\build\Mal.Mdk2.References.targets'))" />
+  </Target>
+  <Import Project="packages\Mal.Mdk2.References.2.1.9\build\Mal.Mdk2.References.targets" Condition="Exists('packages\Mal.Mdk2.References.2.1.9\build\Mal.Mdk2.References.targets')" />
+</Project>
