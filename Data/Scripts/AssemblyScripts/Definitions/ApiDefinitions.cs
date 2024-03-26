@@ -23,6 +23,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["GetConnectedBlocks"] = new Func<MyEntity, bool, MyEntity[]>(GetConnectedBlocks),
                 ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
                 ["IsDebug"] = new Func<bool>(IsDebug),
+                ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
             };
         }
 
@@ -92,6 +93,18 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return null;
 
             return (MyEntity) wep.basePart.block.FatBlock;
+        }
+
+        private int GetContainingAssembly(MyEntity blockEntity)
+        {
+            IMySlimBlock block = blockEntity as IMySlimBlock;
+            foreach (var partKvp in AssemblyPartManager.I.AllAssemblyParts)
+            {
+                if (partKvp.Value != block)
+                    continue;
+                return partKvp.Value.memberAssembly.AssemblyId;
+            }
+            return -1;
         }
     }
 }

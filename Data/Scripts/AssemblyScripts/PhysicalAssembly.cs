@@ -17,7 +17,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public AssemblyPart basePart;
         public List<AssemblyPart> componentParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
-        public int id = -1;
+        public int AssemblyId = -1;
 
         public int numReactors = 0;
         private Color color;
@@ -32,7 +32,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     foreach (var conPart in part.connectedParts)
                         DebugDrawManager.AddLine(DebugDrawManager.GridToGlobal(part.block.Position, part.block.CubeGrid), DebugDrawManager.GridToGlobal(conPart.block.Position, part.block.CubeGrid), color, 0f);
                 }
-                MyAPIGateway.Utilities.ShowNotification($"Assembly {id} Parts: {componentParts.Count}", 1000 / 60);
+                MyAPIGateway.Utilities.ShowNotification($"Assembly {AssemblyId} Parts: {componentParts.Count}", 1000 / 60);
             }
         }
 
@@ -40,7 +40,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             this.basePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
-            this.id = id;
+            this.AssemblyId = id;
             AssemblyPartManager.I.CreatedPhysicalAssemblies++;
 
             if (AssemblyPartManager.I.AllPhysicalAssemblies.ContainsKey(id))
@@ -61,9 +61,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             componentParts.Add(part);
             part.memberAssembly = this;
-            if (part.prevAssemblyId != id)
-                DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, id, part.block.FatBlock.EntityId, part == basePart);
-            part.prevAssemblyId = id;
+            if (part.prevAssemblyId != AssemblyId)
+                DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
+            part.prevAssemblyId = AssemblyId;
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             part.connectedParts.Clear();
             part.memberAssembly = null;
 
-            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, id, part.block.FatBlock.EntityId, part == basePart);
+            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
 
             if (componentParts.Count == 0)
                 Close();
@@ -97,9 +97,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
             componentParts.Remove(part);
 
-            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, id, part.block.FatBlock.EntityId, part == basePart);
+            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
             if (part.block.Integrity == 0)
-                DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, id, part.block.FatBlock.EntityId, part == basePart);
+                DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
 
             //MyAPIGateway.Utilities.ShowNotification("Subpart parts: " + part.connectedParts.Count);
 
@@ -163,7 +163,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             componentParts = null;
             basePart = null;
-            AssemblyPartManager.I.AllPhysicalAssemblies.Remove(id);
+            AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
 
         public void RecursiveAssemblyChecker(AssemblyPart currentBlock)
