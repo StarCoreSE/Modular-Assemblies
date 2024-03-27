@@ -27,13 +27,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.Init();
             DefinitionHandler.Init();
 
-            if (!MyAPIGateway.Multiplayer.MultiplayerActive)
-            {
+            //if (!MyAPIGateway.Multiplayer.MultiplayerActive)
+            //{
                 MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Run !mwHelp for commands. | {DefinitionHandler.I.ModularDefinitions.Count} definitions loaded.");
                 MyAPIGateway.Utilities.MessageEnteredSender += ChatCommandHandler;
-            }
-            else
-                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Commands disabled, load into a singleplayer world for testing. | {DefinitionHandler.I.ModularDefinitions.Count} definitions loaded.");
+            //}
+            //else
+            //    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Commands disabled, load into a singleplayer world for testing. | {DefinitionHandler.I.ModularDefinitions.Count} definitions loaded.");
         }
 
         public override void UpdateAfterSimulation()
@@ -54,10 +54,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             MyLog.Default.WriteLineAndConsole("Modular Assemblies: AssemblyPartManager closing...");
 
-            if (!MyAPIGateway.Multiplayer.MultiplayerActive)
-            {
+            //if (!MyAPIGateway.Multiplayer.MultiplayerActive)
+            //{
                 MyAPIGateway.Utilities.MessageEnteredSender -= ChatCommandHandler;
-            }
+            //}
 
             AssemblyPartManager.Unload();
             DefinitionHandler.Unload();

@@ -37,8 +37,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         public override void LoadData()
         {
             // Should not run on clients.
-            if (!MyAPIGateway.Multiplayer.IsServer)
-                return;
+            //if (!MyAPIGateway.Multiplayer.IsServer)
+            //    return;
 
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
 

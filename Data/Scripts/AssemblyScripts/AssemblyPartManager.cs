@@ -51,8 +51,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             I = this;
 
             // None of this should run on client.
-            if (!MyAPIGateway.Multiplayer.IsServer)
-                return;
+            //if (!MyAPIGateway.Multiplayer.IsServer)
+            //    return;
 
             MyAPIGateway.Entities.OnEntityAdd += OnGridAdd;
             MyAPIGateway.Entities.OnEntityRemove += OnGridRemove;
@@ -63,8 +63,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             I = null; // important for avoiding this object to remain allocated in memory
 
             // None of this should run on client.
-            if (!MyAPIGateway.Multiplayer.IsServer)
-                return;
+            //if (!MyAPIGateway.Multiplayer.IsServer)
+            //    return;
 
             MyLog.Default.WriteLineAndConsole("Modular Assemblies: AssemblyPartManager closing...");
 
