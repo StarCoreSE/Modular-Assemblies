@@ -13,4 +13,4 @@ Modular Assemblies is the base mod, and must be referenced as a dependency for c
 
 By [@aristeas.], with help from [validpoint].
 Debug drawing referenced from [m_digi]'s "(DevTool) Programmable Block Debug API"
-ModAPI, WcAPI, and included assembly mod referenced from [darkstar0818]'s "AssemblyCore - 2.4"
+ModAPI, WcAPI, and included assembly mod referenced from [darkstar0818]'s "AssemblyCore - 2.4".
