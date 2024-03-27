@@ -27,9 +27,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             I = this;
 
-            if (!MyAPIGateway.Session.IsServer)
-                return;
-
             MyLog.Default.WriteLineAndConsole("Modular Assemblies: DefinitionHandler loading...");
 
             MyAPIGateway.Utilities.RegisterMessageHandler(DefinitionMessageId, DefMessageHandler);
@@ -43,8 +40,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         public void Unload()
         {
             I = null;
-            if (!MyAPIGateway.Session.IsServer)
-                return;
 
             MyLog.Default.WriteLineAndConsole("Modular Assemblies: DefinitionHandler closing...");
 
@@ -56,37 +51,43 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             try
             {
-                var message = o as byte[];
-                if (message == null) return;
+                byte[] message = o as byte[];
+
+                if (message == null)
+                    return;
 
                 DefinitionContainer baseDefArray = null;
                 try
                 {
                     baseDefArray = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(message);
                 }
-                catch {}
+                catch
+                {
+                    // ignored
+                }
 
                 if (baseDefArray != null)
                 {
-                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Recieved {baseDefArray.PhysicalDefs.Length} definitions.");
+                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Received {baseDefArray.PhysicalDefs.Length} definitions.");
                     foreach (var def in baseDefArray.PhysicalDefs)
                     {
-                        ModularDefinition modDef = ModularDefinition.Load(def);
-                        if (modDef != null)
+                        var modDef = ModularDefinition.Load(def);
+                        if (modDef == null)
+                            continue;
+
+                        bool isDefinitionValid = true;
+                        // Check for duplicates
+                        foreach (var definition in ModularDefinitions)
                         {
-                            bool isDefinitionValid = true;
-                            foreach (var definiton in ModularDefinitions)
-                            {
-                                if (definiton.Name == modDef.Name)
-                                {
-                                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
-                                    MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
-                                    isDefinitionValid = false;
-                                }
-                            }
-                            if (isDefinitionValid)
-                                ModularDefinitions.Add(modDef);
+                            if (definition.Name != modDef.Name)
+                                continue;
+
+                            MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
+                            MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
+                            isDefinitionValid = false;
                         }
+                        if (isDefinitionValid)
+                            ModularDefinitions.Add(modDef);
                     }
                 }
                 else

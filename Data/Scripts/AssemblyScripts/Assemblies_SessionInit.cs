@@ -29,7 +29,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             //if (!MyAPIGateway.Multiplayer.MultiplayerActive)
             //{
-                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Run !mwHelp for commands. | {DefinitionHandler.I.ModularDefinitions.Count} definitions loaded.");
+                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Run !mwHelp for commands.");
                 MyAPIGateway.Utilities.MessageEnteredSender += ChatCommandHandler;
             //}
             //else
