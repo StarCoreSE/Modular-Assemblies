@@ -37,12 +37,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             AssemblyPartManager.I.AllAssemblyParts.Add(block, this);
 
-            if (AssemblyDefinition.BaseBlockSubtype == block.BlockDefinition.Id.SubtypeName)
+            if (AssemblyDefinition.BaseBlockSubtype == null)
             {
-                memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                AssemblyPartManager.I.QueueConnectionCheck(this);
             }
             else
-                AssemblyPartManager.I.QueueConnectionCheck(this);
+            {
+                if (AssemblyDefinition.BaseBlockSubtype == block.BlockDefinition.Id.SubtypeName)
+                {
+                    memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                }
+                else
+                {
+                    AssemblyPartManager.I.QueueConnectionCheck(this);
+                }
+            }
         }
 
         public int prevAssemblyId = -1;
@@ -53,15 +62,32 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             //    memberAssembly = null;
 
             List<AssemblyPart> validNeighbors = GetValidNeighborParts();
+            List<PhysicalAssembly> neighborAssemblies = new List<PhysicalAssembly>();
 
             // Search for neighboring PhysicalAssemblies
             foreach (var nBlockPart in validNeighbors)
             {
-                if (nBlockPart.memberAssembly == null)
+                if (nBlockPart.memberAssembly == null || neighborAssemblies.Contains(nBlockPart.memberAssembly))
                     continue;
-                nBlockPart.memberAssembly.AddPart(this);
-                break;
+                //nBlockPart.memberAssembly.AddPart(this);
+                neighborAssemblies.Add(nBlockPart.memberAssembly);
             }
+
+            if (neighborAssemblies.Count > 0)
+            {
+                PhysicalAssembly largestAssembly = neighborAssemblies[0];
+
+                foreach (var assembly in neighborAssemblies)
+                    if (assembly.componentParts.Count > largestAssembly.componentParts.Count)
+                        largestAssembly = assembly;
+
+                neighborAssemblies[0].AddPart(this);
+
+                foreach (var assembly in neighborAssemblies)
+                    assembly.MergeWith(memberAssembly);
+            }
+            else if (AssemblyDefinition.BaseBlockSubtype == null)
+                memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
 
             if (memberAssembly == null)
             {
@@ -84,7 +110,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 //else if (nBlockPart.memberAssembly != memberAssembly)
                 //    MyAPIGateway.Utilities.ShowNotification("Invalid memberAssembly");
                 else if (!nBlockPart.connectedParts.Contains(this))
+                {
                     nBlockPart.connectedParts.Add(this);
+                }
             }
 
             if (Assemblies_SessionInit.I.DebugMode)
@@ -123,10 +151,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         /// Returns attached (as per AssemblyPart) neighbor blocks's parts.
         /// </summary>
         /// <returns></returns>
-        private List<AssemblyPart> GetValidNeighborParts()
+        private List<AssemblyPart> GetValidNeighborParts(bool MustShareAssembly = false)
         {
             List<AssemblyPart> validNeighbors = new List<AssemblyPart>();
-            foreach (var nBlock in GetValidNeighbors())
+            foreach (var nBlock in GetValidNeighbors(MustShareAssembly))
             {
                 AssemblyPart nBlockPart;
                 if (AssemblyPartManager.I.AllAssemblyParts.TryGetValue(nBlock, out nBlockPart))
@@ -136,6 +164,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
 
             return validNeighbors;
+        }
+
+        /// <summary>
+        /// Populates a list with all blocks that share a connection chain.
+        /// </summary>
+        /// <param name="connected"></param>
+        public void GetConnectedPartChain(ref List<AssemblyPart> connected, bool MustShareAssembly)
+        {
+            foreach (var part in GetValidNeighborParts(MustShareAssembly))
+            {
+                if (connected.Contains(part))
+                    continue;
+                connected.Add(part);
+                part.GetConnectedPartChain(ref connected, MustShareAssembly);
+            }
         }
     }
 }

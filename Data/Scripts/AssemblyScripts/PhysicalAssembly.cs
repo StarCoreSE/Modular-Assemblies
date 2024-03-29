@@ -56,9 +56,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void AddPart(AssemblyPart part)
         {
-            if (componentParts.Contains(part))
-                componentParts.Remove(part);
-
+            componentParts.Remove(part);
             componentParts.Add(part);
             part.memberAssembly = this;
             if (part.prevAssemblyId != AssemblyId)
@@ -75,17 +73,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (componentParts == null || part == null)
                 return;
 
-            if (!componentParts.Contains(part))
+            if (!componentParts.Remove(part))
                 return;
-            componentParts.Remove(part);
 
             part.connectedParts.Clear();
             part.memberAssembly = null;
 
             DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
-
-            if (componentParts.Count == 0)
-                Close();
         }
 
         public void Remove(AssemblyPart part)
@@ -93,26 +87,26 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (componentParts == null || part == null)
                 return;
 
-            if (!componentParts.Contains(part))
+            if (!componentParts.Remove(part))
                 return;
-            componentParts.Remove(part);
 
             DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
-            if (part.block.Integrity == 0)
+            if (part.block.Integrity <= 0)
                 DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
 
             //MyAPIGateway.Utilities.ShowNotification("Subpart parts: " + part.connectedParts.Count);
 
             // Clear self if basepart was removed
-            if (part == basePart)
+            if (part == basePart || componentParts.Count == 0)
             {
                 foreach (var cPart in componentParts.ToList())
                     ResetPart(cPart);
                 Close();
                 return;
             }
+
             // Split apart if necessary. Recalculates every connection - suboptimal but neccessary, I believe.
-            else if (part.connectedParts.Count > 1)
+            if (part.connectedParts.Count > 1)
             {
                 foreach (var cPart in componentParts.ToList())
                     ResetPart(cPart);
@@ -203,6 +197,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     }
                 }
             }
+        }
+
+        public void MergeWith(PhysicalAssembly assembly)
+        {
+            if (assembly == null || assembly == this)
+                return;
+
+            foreach (var part in componentParts)
+                assembly.AddPart(part);
+            Close();
         }
     }
 }

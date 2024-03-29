@@ -92,7 +92,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
                 return null;
 
-            return (MyEntity) wep.basePart.block.FatBlock;
+            return wep.basePart?.block?.FatBlock as MyEntity;
         }
 
         private int GetContainingAssembly(MyEntity blockEntity)

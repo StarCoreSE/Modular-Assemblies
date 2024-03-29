@@ -31,9 +31,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 Name = definition.Name,
             };
             
-            if (def.AllowedBlocks == null || def.AllowedConnections == null || def.BaseBlockSubtype == null || def.Name == null)
+            if (def.AllowedBlocks == null || def.AllowedConnections == null || def.Name == null)
             {
                 MyLog.Default.WriteLineAndConsole("Modular Assemblies: Failed to create new ModularDefinition for " + definition.Name);
+                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", "Failed to create new ModularDefinition for " + definition.Name);
                 return null;
             }
 

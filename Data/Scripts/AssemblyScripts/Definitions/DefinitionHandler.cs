@@ -194,9 +194,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         private void SendFunc(FunctionCall call)
         {
-            if (!MyAPIGateway.Session.IsServer)
-                return;
-
             MyAPIGateway.Utilities.SendModMessage(OutboundMessageId, MyAPIGateway.Utilities.SerializeToBinary(call));
             //MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Sending function call [id {call.ActionId}] to [{call.DefinitionName}].");
         }
