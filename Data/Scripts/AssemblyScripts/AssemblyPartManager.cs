@@ -84,14 +84,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Queue partadds to account for world load/grid pasting
             foreach (var queuedPart in QueuedConnectionChecks.ToList())
             {
-                queuedPart.CheckForExistingAssembly();
+                queuedPart.DoConnectionCheck();
                 QueuedConnectionChecks.Remove(queuedPart);
             }
 
             // Queue assembly pathing to account for world load/grid pasting
             foreach (var queuedAssembly in QueuedAssemblyChecks.Keys.ToList())
             {
-                QueuedAssemblyChecks[queuedAssembly].RecursiveAssemblyChecker(queuedAssembly);
+                //QueuedAssemblyChecks[queuedAssembly].RecursiveAssemblyChecker(queuedAssembly);
                 QueuedAssemblyChecks.Remove(queuedAssembly);
             }
 
@@ -179,7 +179,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPart part;
             if (AllAssemblyParts.TryGetValue(block, out part))
             {
-                part.memberAssembly?.Remove(part);
+                part.memberAssembly?.RemovePart(part);
                 AllAssemblyParts.Remove(block);
             }
         }

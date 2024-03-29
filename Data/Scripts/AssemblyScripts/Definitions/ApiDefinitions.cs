@@ -53,7 +53,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return new MyEntity[0];
 
             List<MyEntity> parts = new List<MyEntity>();
-            foreach (var part in wep.componentParts)
+            foreach (var part in wep.ComponentParts)
                 if (part.block.FatBlock != null)
                     parts.Add((MyEntity)part.block.FatBlock);
 
@@ -66,13 +66,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return new MyEntity[0];
 
             AssemblyPart wep;
-            if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(((IMyCubeBlock)blockEntity).SlimBlock, out wep) || wep.connectedParts == null)
+            if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(((IMyCubeBlock)blockEntity).SlimBlock, out wep) || wep.ConnectedParts == null)
                 return new MyEntity[0];
 
             List<MyEntity> parts = new List<MyEntity>();
             if (useCached)
             {
-                foreach (var part in wep.connectedParts)
+                foreach (var part in wep.ConnectedParts)
                     if (part.block.FatBlock != null)
                         parts.Add((MyEntity)part.block.FatBlock);
             }
@@ -92,7 +92,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
                 return null;
 
-            return wep.basePart?.block?.FatBlock as MyEntity;
+            return null;  //wep.basePart?.block?.FatBlock as MyEntity;
         }
 
         private int GetContainingAssembly(MyEntity blockEntity)

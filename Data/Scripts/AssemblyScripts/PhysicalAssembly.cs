@@ -14,31 +14,30 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
     /// </summary>
     public class PhysicalAssembly
     {
-        public AssemblyPart basePart;
-        public List<AssemblyPart> componentParts = new List<AssemblyPart>();
+        //public AssemblyPart basePart;
+        public List<AssemblyPart> ComponentParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
         public int AssemblyId = -1;
 
-        public int numReactors = 0;
         private Color color;
 
         public void Update()
         {
             if (Assemblies_SessionInit.I.DebugMode)
             {
-                foreach (var part in componentParts)
+                foreach (var part in ComponentParts)
                 {
                     DebugDrawManager.AddGridPoint(part.block.Position, part.block.CubeGrid, color, 0f);
-                    foreach (var conPart in part.connectedParts)
+                    foreach (var conPart in part.ConnectedParts)
                         DebugDrawManager.AddLine(DebugDrawManager.GridToGlobal(part.block.Position, part.block.CubeGrid), DebugDrawManager.GridToGlobal(conPart.block.Position, part.block.CubeGrid), color, 0f);
                 }
-                MyAPIGateway.Utilities.ShowNotification($"Assembly {AssemblyId} Parts: {componentParts.Count}", 1000 / 60);
+                MyAPIGateway.Utilities.ShowNotification($"Assembly {AssemblyId} Parts: {ComponentParts.Count}", 1000 / 60);
             }
         }
 
         public PhysicalAssembly(int id, AssemblyPart basePart, ModularDefinition AssemblyDefinition)
         {
-            this.basePart = basePart;
+            //this.basePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
             this.AssemblyId = id;
             AssemblyPartManager.I.CreatedPhysicalAssemblies++;
@@ -56,147 +55,58 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void AddPart(AssemblyPart part)
         {
-            componentParts.Remove(part);
-            componentParts.Add(part);
+            if (ComponentParts.Contains(part))
+                return;
+
+            ComponentParts.Add(part);
             part.memberAssembly = this;
             if (part.prevAssemblyId != AssemblyId)
-                DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
+                DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, /*part == basePart*/ false);
             part.prevAssemblyId = AssemblyId;
         }
 
-        /// <summary>
-        /// Removes a part without running connection checks. Only use when the PhysicalAssembly will be removed.
-        /// </summary>
-        /// <param name="part"></param>
-        public void RemoveFast(AssemblyPart part)
+        public void RemovePart(AssemblyPart part)
         {
-            if (componentParts == null || part == null)
-                return;
-
-            if (!componentParts.Remove(part))
-                return;
-
-            part.connectedParts.Clear();
-            part.memberAssembly = null;
-
-            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
-        }
-
-        public void Remove(AssemblyPart part)
-        {
-            if (componentParts == null || part == null)
-                return;
-
-            if (!componentParts.Remove(part))
-                return;
-
-            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
-            if (part.block.Integrity <= 0)
-                DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, AssemblyId, part.block.FatBlock.EntityId, part == basePart);
-
-            //MyAPIGateway.Utilities.ShowNotification("Subpart parts: " + part.connectedParts.Count);
-
-            // Clear self if basepart was removed
-            if (part == basePart || componentParts.Count == 0)
+            MyAPIGateway.Utilities.ShowNotification("NeighborCount: " + part.GetValidNeighbors().Count);
+            ComponentParts.Remove(part);
+            if (ComponentParts.Count == 0)
             {
-                foreach (var cPart in componentParts.ToList())
-                    ResetPart(cPart);
                 Close();
                 return;
             }
 
-            // Split apart if necessary. Recalculates every connection - suboptimal but neccessary, I believe.
-            if (part.connectedParts.Count > 1)
-            {
-                foreach (var cPart in componentParts.ToList())
-                    ResetPart(cPart);
-                componentParts.Clear();
+            List<AssemblyPart> neighbors = part.ConnectedParts;
 
-                // Above loop removes all parts's memberAssemblies, but the base should always have one.
-                basePart.memberAssembly = this;
-                componentParts.Add(basePart);
+            foreach (var neighbor in neighbors)
+                neighbor.ConnectedParts.Remove(part);
 
-                if (Assemblies_SessionInit.I.DebugMode)
-                    MyAPIGateway.Utilities.ShowNotification("Recreating connections...");
-                AssemblyPartManager.I.QueueConnectionCheck(basePart);
-                AssemblyPartManager.I.QueueAssemblyCheck(basePart, this);
-
+            if (neighbors.Count == 1)
                 return;
+
+            List<HashSet<AssemblyPart>> partLoops = new List<HashSet<AssemblyPart>>();
+            foreach (var neighbor in neighbors)
+            {
+                HashSet<AssemblyPart> connectedParts = new HashSet<AssemblyPart>();
+                neighbor.GetAllConnectedParts(ref connectedParts);
+
+                if (connectedParts.Count == ComponentParts.Count - 1)
+                    continue;
+
+                partLoops.Add(connectedParts);
             }
 
-            // Make doubly and triply sure that each part does not remember this one.
-            foreach (var cPart in part.connectedParts)
-            {
-                int idx = cPart.connectedParts.IndexOf(part);
-                if (idx >= 0)
-                {
-                    cPart.connectedParts.RemoveAt(idx);
-                }
-            }
-
-            part.connectedParts.Clear();
-            part.memberAssembly = null;
-
-            if (componentParts.Count == 0)
-                Close();
-        }
-
-        private void ResetPart(AssemblyPart part)
-        {
-            if (part == null)
-                return;
-            part.memberAssembly = null;
-            part.connectedParts.Clear();
-            AssemblyPartManager.I.QueueConnectionCheck(part);
+            MyAPIGateway.Utilities.ShowNotification("LoopCount: " + partLoops.Count + " of " + neighbors.Count);
         }
 
         public void Close()
         {
-            if (componentParts == null)
-                return;
+            foreach (var part in ComponentParts)
+                if (part.memberAssembly == this)
+                    part.memberAssembly = null;
 
-            componentParts = null;
-            basePart = null;
+            ComponentParts.Clear();
+            //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
-        }
-
-        public void RecursiveAssemblyChecker(AssemblyPart currentBlock)
-        {
-            // Safety check
-            if (currentBlock == null || currentBlock.block == null || componentParts == null) return;
-
-            // TODO split between threads/ticks
-            currentBlock.memberAssembly = this;
-
-            List<IMySlimBlock> slimNeighbors = new List<IMySlimBlock>();
-            currentBlock.block.GetNeighbours(slimNeighbors);
-        
-            foreach (IMySlimBlock neighbor in slimNeighbors)
-            {
-                // Another safety check
-                if (neighbor == null) continue;
-
-                if (AssemblyDefinition.IsBlockAllowed(neighbor) && AssemblyDefinition.DoesBlockConnect(currentBlock.block, neighbor))
-                {
-                    AssemblyPart neighborPart;
-                    
-                    if (AssemblyPartManager.I.AllAssemblyParts.TryGetValue(neighbor, out neighborPart))
-                    {
-                        // Avoid double-including blocks
-                        if (componentParts.Contains(neighborPart))
-                        {
-                            //MyLog.Default.WriteLineAndConsole("ModularAssemblies: Skip part " + neighbor.BlockDefinition.Id.SubtypeName + " @ " + neighbor.Position);
-                            continue;
-                        }
-
-                        //MyLog.Default.WriteLineAndConsole("ModularAssemblies: Add part " + neighbor.BlockDefinition.Id.SubtypeName + " @ " + neighbor.Position);
-
-                        componentParts.Add(neighborPart);
-                        AssemblyPartManager.I.QueueConnectionCheck(neighborPart);
-                        AssemblyPartManager.I.QueueAssemblyCheck(neighborPart, this);
-                    }
-                }
-            }
         }
 
         public void MergeWith(PhysicalAssembly assembly)
@@ -204,8 +114,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (assembly == null || assembly == this)
                 return;
 
-            foreach (var part in componentParts)
+            foreach (var part in ComponentParts)
+            {
                 assembly.AddPart(part);
+            }
             Close();
         }
     }
