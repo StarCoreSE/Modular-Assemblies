@@ -85,7 +85,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             List<IMySlimBlock> neighbors = new List<IMySlimBlock>();
             block.GetNeighbours(neighbors);
 
-            neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(nBlock, nBlock, true));
+            neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(block, nBlock, true));
 
             if (MustShareAssembly)
                 neighbors.RemoveAll(nBlock =>
