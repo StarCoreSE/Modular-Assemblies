@@ -28,15 +28,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public Dictionary<int, PhysicalAssembly> AllPhysicalAssemblies = new Dictionary<int, PhysicalAssembly>();
         public int CreatedPhysicalAssemblies = 0;
 
-        private List<IMySlimBlock> QueuedBlockAdds = new List<IMySlimBlock>();
-        private List<AssemblyPart> QueuedConnectionChecks = new List<AssemblyPart>();
+        private HashSet<IMySlimBlock> QueuedBlockAdds = new HashSet<IMySlimBlock>();
+        private HashSet<AssemblyPart> QueuedConnectionChecks = new HashSet<AssemblyPart>();
         private Dictionary<AssemblyPart, PhysicalAssembly> QueuedAssemblyChecks = new Dictionary<AssemblyPart, PhysicalAssembly>();
 
         public void QueueBlockAdd(IMySlimBlock block) => QueuedBlockAdds.Add(block);
         public void QueueConnectionCheck(AssemblyPart part)
         {
-            if (!QueuedConnectionChecks.Contains(part))
-                QueuedConnectionChecks.Add(part);
+            QueuedConnectionChecks.Add(part);
         }
         public void QueueAssemblyCheck(AssemblyPart part, PhysicalAssembly assembly)
         {
@@ -61,6 +60,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public void Unload()
         {
             I = null; // important for avoiding this object to remain allocated in memory
+            AllAssemblyParts.Clear();
+            AllPhysicalAssemblies.Clear();
 
             // None of this should run on client.
             //if (!MyAPIGateway.Multiplayer.IsServer)
@@ -151,12 +152,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
 
             IMyCubeGrid grid = (IMyCubeGrid)entity;
-            grid.OnBlockAdded -= OnBlockAdd;
-            grid.OnBlockRemoved -= OnBlockRemove;
 
             // Exclude projected and held grids
             if (grid.Physics == null)
                 return;
+
+            grid.OnBlockAdded -= OnBlockAdd;
+            grid.OnBlockRemoved -= OnBlockRemove;
 
             List<AssemblyPart> toRemove = new List<AssemblyPart>();
             foreach (var partKvp in AllAssemblyParts)
@@ -169,8 +171,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             foreach (var deadPart in toRemove)
             {
-                deadPart.memberAssembly?.Close();
-                AllAssemblyParts.Remove(deadPart.block);
+                AllAssemblyParts.Remove(deadPart.Block);
+                deadPart.MemberAssembly?.Close();
             }
         }
 
@@ -179,7 +181,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPart part;
             if (AllAssemblyParts.TryGetValue(block, out part))
             {
-                part.memberAssembly?.RemovePart(part);
+                part.PartRemoved();
                 AllAssemblyParts.Remove(block);
             }
         }

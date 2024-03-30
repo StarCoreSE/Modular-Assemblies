@@ -53,9 +53,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return new MyEntity[0];
 
             List<MyEntity> parts = new List<MyEntity>();
-            foreach (var part in wep.ComponentParts)
-                if (part.block.FatBlock != null)
-                    parts.Add((MyEntity)part.block.FatBlock);
+            //foreach (var part in wep.ComponentParts)
+            //    if (part.Block.FatBlock != null)
+            //        parts.Add((MyEntity)part.Block.FatBlock);
 
             return parts.ToArray();
         }
@@ -73,8 +73,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (useCached)
             {
                 foreach (var part in wep.ConnectedParts)
-                    if (part.block.FatBlock != null)
-                        parts.Add((MyEntity)part.block.FatBlock);
+                    if (part.Block.FatBlock != null)
+                        parts.Add((MyEntity)part.Block.FatBlock);
             }
             else
             {
@@ -102,7 +102,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 if (partKvp.Value != block)
                     continue;
-                return partKvp.Value.memberAssembly.AssemblyId;
+                return partKvp.Value.MemberAssembly.AssemblyId;
             }
             return -1;
         }

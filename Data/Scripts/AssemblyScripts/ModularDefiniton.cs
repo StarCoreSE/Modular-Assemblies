@@ -44,7 +44,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public bool DoesBlockConnect(IMySlimBlock block, IMySlimBlock adajent, bool lineCheck = true)
         {
-            // Check if adajent block connects first, but don't make an infinite loop
+            // Check if adjacent block connects first, but don't make an infinite loop
             if (lineCheck)
                 if (!DoesBlockConnect(adajent, block, false))
                     return false;
@@ -53,11 +53,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             Matrix localOrientation;
             block.Orientation.GetMatrix(out localOrientation);
 
-            if (AllowedConnections.ContainsKey(block.BlockDefinition.Id.SubtypeName))
+            Dictionary<Vector3I, string[]> connection;
+            if (AllowedConnections.TryGetValue(block.BlockDefinition.Id.SubtypeName, out connection))
             {
-                foreach (var allowedPosKvp in AllowedConnections[block.BlockDefinition.Id.SubtypeName])
+                foreach (var allowedPosKvp in connection)
                 {
-                    Vector3I offsetAllowedPos = (Vector3I)Vector3D.Rotate((Vector3D)allowedPosKvp.Key, localOrientation) + block.Position;
+                    Vector3I offsetAllowedPos = (Vector3I)Vector3D.Rotate(allowedPosKvp.Key, localOrientation) + block.Position;
 
                     // If list is empty OR block is not in whitelist, continue.
                     if (allowedPosKvp.Value?.Length == 0 || !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.Id.SubtypeName) ?? true))
