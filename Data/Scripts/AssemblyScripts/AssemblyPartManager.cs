@@ -161,19 +161,20 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             grid.OnBlockRemoved -= OnBlockRemove;
 
             List<AssemblyPart> toRemove = new List<AssemblyPart>();
+            HashSet<PhysicalAssembly> toRemoveAssemblies = new HashSet<PhysicalAssembly>();
             foreach (var partKvp in AllAssemblyParts)
             {
                 if (partKvp.Key.CubeGrid == grid)
                 {
                     toRemove.Add(partKvp.Value);
+                    if (partKvp.Value.MemberAssembly != null)
+                        toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
                 }
             }
-
+            foreach (var deadAssembly in toRemoveAssemblies)
+                deadAssembly.Close();
             foreach (var deadPart in toRemove)
-            {
                 AllAssemblyParts.Remove(deadPart.Block);
-                deadPart.MemberAssembly?.Close();
-            }
         }
 
         private void OnBlockRemove(IMySlimBlock block)

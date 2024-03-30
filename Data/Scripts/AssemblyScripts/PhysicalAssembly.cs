@@ -18,6 +18,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public List<AssemblyPart> ComponentParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
         public int AssemblyId = -1;
+        public bool IsClosing = false;
 
         private Color color;
 
@@ -60,14 +61,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             ComponentParts.Add(part);
             part.MemberAssembly = this;
-            if (part.prevAssemblyId != AssemblyId)
+            if (part.PrevAssemblyId != AssemblyId)
                 DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, AssemblyId, part.Block.FatBlock.EntityId, /*part == basePart*/ ComponentParts.Count == 1);
-            part.prevAssemblyId = AssemblyId;
+            part.PrevAssemblyId = AssemblyId;
         }
 
         public void RemovePart(AssemblyPart part)
         {
-            ComponentParts.Remove(part);
+            if (!ComponentParts.Remove(part))
+                return;
 
             List<AssemblyPart> neighbors = part.ConnectedParts;
 
@@ -119,10 +121,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void Close()
         {
-            foreach (var part in ComponentParts)
+            IsClosing = true;
+            if (ComponentParts != null)
             {
-                if (part.MemberAssembly == this)
+                foreach (var part in ComponentParts)
                 {
+                    if (part.MemberAssembly != this)
+                        continue;
                     part.MemberAssembly = null;
                     part.ConnectedParts.Clear();
                 }
@@ -138,7 +143,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (assembly == null || assembly == this)
                 return;
 
-            foreach (var part in ComponentParts)
+            foreach (var part in ComponentParts.ToArray())
             {
                 assembly.AddPart(part);
             }

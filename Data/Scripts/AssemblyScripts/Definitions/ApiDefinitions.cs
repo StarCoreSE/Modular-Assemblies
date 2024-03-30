@@ -53,9 +53,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return new MyEntity[0];
 
             List<MyEntity> parts = new List<MyEntity>();
-            //foreach (var part in wep.ComponentParts)
-            //    if (part.Block.FatBlock != null)
-            //        parts.Add((MyEntity)part.Block.FatBlock);
+            foreach (var part in wep.ComponentParts)
+                if (part.Block.FatBlock != null)
+                    parts.Add((MyEntity)part.Block.FatBlock);
 
             return parts.ToArray();
         }

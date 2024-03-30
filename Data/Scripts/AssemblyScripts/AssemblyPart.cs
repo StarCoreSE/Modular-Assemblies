@@ -26,23 +26,24 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             get
             {
-                return memberAssembly;
+                return _memberAssembly;
             }
             set
             {
-                if (value != memberAssembly)
+                if (value != _memberAssembly)
                 {
-                    memberAssembly?.RemovePart(this);
-                    memberAssembly = value;
+                    if (!_memberAssembly?.IsClosing ?? false)
+                        _memberAssembly.RemovePart(this);
+                    _memberAssembly = value;
                 }
             }
         }
-        private PhysicalAssembly memberAssembly = null;
+        private PhysicalAssembly _memberAssembly = null;
 
         public List<AssemblyPart> ConnectedParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
 
-        public int prevAssemblyId = -1;
+        public int PrevAssemblyId = -1;
 
         public AssemblyPart(IMySlimBlock block, ModularDefinition AssemblyDefinition)
         {
@@ -66,7 +67,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // If no neighbors, create assembly.
             if (neighbors.Count == 0)
             {
-                memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
                 return;
             }
             
@@ -83,10 +84,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Double-checking for null assemblies
             if (assemblies.Count == 0)
             {
-                memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
                 return;
             }
-             
+            
             PhysicalAssembly largestAssembly = null;
             foreach (var assembly in assemblies)
             {
@@ -103,16 +104,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             largestAssembly?.AddPart(this);
             
             ConnectedParts = neighbors;
-            MyAPIGateway.Utilities.ShowNotification("NeighborCount: " + ConnectedParts.Count);
         }
 
         public void PartRemoved()
         {
-            MyAPIGateway.Utilities.ShowNotification("PremNeighborCount: " + ConnectedParts.Count);
             MemberAssembly?.RemovePart(this);
             foreach (var neighbor in ConnectedParts)
                 neighbor.ConnectedParts.Remove(this);
-            MyAPIGateway.Utilities.ShowNotification("RemNeighborCount: " + ConnectedParts.Count);
         }
 
         /// <summary>
