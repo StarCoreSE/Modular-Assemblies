@@ -14,7 +14,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
     /// </summary>
     public class PhysicalAssembly
     {
-        //public AssemblyPart basePart;
+        public AssemblyPart BasePart = null;
         public List<AssemblyPart> ComponentParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
         public int AssemblyId = -1;
@@ -38,7 +38,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public PhysicalAssembly(int id, AssemblyPart basePart, ModularDefinition AssemblyDefinition)
         {
-            //this.basePart = basePart;
+            if (AssemblyDefinition.BaseBlockSubtype != null)
+                BasePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
             this.AssemblyId = id;
             AssemblyPartManager.I.CreatedPhysicalAssemblies++;
@@ -76,7 +77,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             foreach (var neighbor in neighbors)
                 neighbor.ConnectedParts.Remove(part);
 
-            if (ComponentParts.Count == 0)
+            if (ComponentParts.Count == 0 || part == BasePart)
             {
                 Close();
                 return;

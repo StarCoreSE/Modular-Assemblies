@@ -21,6 +21,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
     public class AssemblyPart
     {
         public IMySlimBlock Block;
+        public bool IsBaseBlock = false;
 
         public PhysicalAssembly MemberAssembly
         {
@@ -50,7 +51,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             this.Block = block;
             this.AssemblyDefinition = AssemblyDefinition;
 
-            //MyAPIGateway.Utilities.ShowNotification("Placed valid AssemblyPart");
+            IsBaseBlock = AssemblyDefinition.BaseBlockSubtype == Block.BlockDefinition.Id.SubtypeName;
 
             if (AssemblyPartManager.I.AllAssemblyParts.ContainsKey(block))
                 return;
@@ -60,14 +61,22 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.I.QueueConnectionCheck(this);
         }
 
-        public void DoConnectionCheck()
+        public void DoConnectionCheck(bool cascadingUpdate = false)
         {
             List<AssemblyPart> neighbors = GetValidNeighborParts();
 
-            // If no neighbors, create assembly.
-            if (neighbors.Count == 0)
+            // If no neighbors AND (is base block OR base block not defined), create assembly.
+            if (neighbors.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
             {
                 _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                // Trigger cascading update
+                if (IsBaseBlock || cascadingUpdate)
+                {
+                    MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+                    foreach (var neighbor in GetValidNeighborParts())
+                        if (neighbor.MemberAssembly == null)
+                            neighbor.DoConnectionCheck(true);
+                }
                 return;
             }
             
@@ -82,13 +91,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
 
             // Double-checking for null assemblies
-            if (assemblies.Count == 0)
+            if (assemblies.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
             {
                 _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                // Trigger cascading update
+                if (IsBaseBlock || cascadingUpdate)
+                {
+                    MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+                    foreach (var neighbor in GetValidNeighborParts())
+                        if (neighbor.MemberAssembly == null)
+                            neighbor.DoConnectionCheck(true);
+                }
                 return;
             }
             
-            PhysicalAssembly largestAssembly = null;
+            PhysicalAssembly largestAssembly = MemberAssembly;
             foreach (var assembly in assemblies)
             {
                 if (assembly.ComponentParts.Count > (largestAssembly?.ComponentParts.Count ?? -1))
@@ -104,6 +121,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             largestAssembly?.AddPart(this);
             
             ConnectedParts = neighbors;
+
+            // Trigger cascading update
+            if (IsBaseBlock || cascadingUpdate)
+            {
+                MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+                foreach (var neighbor in GetValidNeighborParts())
+                    if (neighbor.MemberAssembly == null)
+                        neighbor.DoConnectionCheck(true);
+            }
         }
 
         public void PartRemoved()
