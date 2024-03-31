@@ -24,7 +24,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void Update()
         {
-            if (Assemblies_SessionInit.I.DebugMode)
+            if (Assemblies_SessionInit.DebugMode)
             {
                 foreach (var part in ComponentParts)
                 {
@@ -48,8 +48,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 throw new Exception("Duplicate assembly ID!");
             AssemblyPartManager.I.AllPhysicalAssemblies.Add(id, this);
 
-            Random r = new Random();
-            color = new Color(r.Next(255), r.Next(255), r.Next(255));
+            
+            color = new Color(Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255));
 
             AddPart(basePart);
             AssemblyPartManager.I.QueueAssemblyCheck(basePart, this);
@@ -72,10 +72,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (!ComponentParts.Remove(part))
                 return;
 
-            List<AssemblyPart> neighbors = part.ConnectedParts;
+            HashSet<AssemblyPart> neighbors = part.ConnectedParts;
 
             foreach (var neighbor in neighbors)
-                neighbor.ConnectedParts.Remove(part);
+            {
+                neighbor.ConnectedParts = neighbor.GetValidNeighborParts();
+            }
 
             if (ComponentParts.Count == 0 || part == BasePart)
             {
@@ -92,13 +94,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 HashSet<AssemblyPart> connectedParts = new HashSet<AssemblyPart>();
                 neighbor.GetAllConnectedParts(ref connectedParts);
 
-                if (connectedParts.Count == ComponentParts.Count)
-                    continue;
-
                 partLoops.Add(connectedParts);
             }
 
-            if (partLoops.Count == 0)
+            if (partLoops.Count <= 1)
                 return;
 
             // Split apart, keeping this assembly as the largest loop.

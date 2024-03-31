@@ -99,7 +99,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             foreach (var assembly in AllPhysicalAssemblies.Values)
                 assembly.Update();
 
-            if (Assemblies_SessionInit.I.DebugMode)
+            if (Assemblies_SessionInit.DebugMode)
             {
                 MyAPIGateway.Utilities.ShowNotification("Assemblies: " + AllPhysicalAssemblies.Count + " | Parts: " + AllAssemblyParts.Count, 1000 / 60);
                 MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}", 1000 / 60);

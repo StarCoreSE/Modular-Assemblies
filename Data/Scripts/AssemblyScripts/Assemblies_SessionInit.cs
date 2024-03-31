@@ -16,7 +16,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public static Assemblies_SessionInit I;
         AssemblyPartManager AssemblyPartManager = new AssemblyPartManager();
         DefinitionHandler DefinitionHandler = new DefinitionHandler();
-        public bool DebugMode = false;
+        public static bool DebugMode = false;
+        public Random random = new Random();
 
         #region Base Methods
 

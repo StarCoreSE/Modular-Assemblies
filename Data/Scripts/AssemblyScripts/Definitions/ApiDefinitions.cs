@@ -29,7 +29,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         private bool IsDebug()
         {
-            return Assemblies_SessionInit.I.DebugMode;
+            return Assemblies_SessionInit.DebugMode;
         }
 
         private MyEntity[] GetAllParts()

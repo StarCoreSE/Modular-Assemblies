@@ -41,7 +41,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         }
         private PhysicalAssembly _memberAssembly = null;
 
-        public List<AssemblyPart> ConnectedParts = new List<AssemblyPart>();
+        public HashSet<AssemblyPart> ConnectedParts = new HashSet<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
 
         public int PrevAssemblyId = -1;
@@ -63,10 +63,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void DoConnectionCheck(bool cascadingUpdate = false)
         {
-            List<AssemblyPart> neighbors = GetValidNeighborParts();
+            ConnectedParts = GetValidNeighborParts();
+            if (Assemblies_SessionInit.DebugMode)
+                MyAPIGateway.Utilities.ShowMessage("Fusion Systems", "AddNeighbors: " + ConnectedParts.Count);
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
-            if (neighbors.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
+            if (ConnectedParts.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
             {
                 _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
                 // Trigger cascading update
@@ -81,13 +83,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
             
             HashSet<PhysicalAssembly> assemblies = new HashSet<PhysicalAssembly>();
-            foreach (var neighbor in neighbors)
+            foreach (var neighbor in ConnectedParts)
             {
                 if (neighbor.MemberAssembly != null)
                 {
                     assemblies.Add(neighbor.MemberAssembly);
-                    neighbor.ConnectedParts.Add(this);
                 }
+                neighbor.ConnectedParts = neighbor.GetValidNeighborParts();
             }
 
             // Double-checking for null assemblies
@@ -120,8 +122,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
             largestAssembly?.AddPart(this);
             
-            ConnectedParts = neighbors;
-
             // Trigger cascading update
             if (IsBaseBlock || cascadingUpdate)
             {
@@ -166,7 +166,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         /// Returns attached (as per AssemblyPart) neighbor blocks's parts.
         /// </summary>
         /// <returns></returns>
-        public List<AssemblyPart> GetValidNeighborParts(bool MustShareAssembly = false)
+        public HashSet<AssemblyPart> GetValidNeighborParts(bool MustShareAssembly = false)
         {
             List<AssemblyPart> validNeighbors = new List<AssemblyPart>();
             foreach (var nBlock in GetValidNeighbors())
@@ -179,7 +179,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     validNeighbors.Add(nBlockPart);
             }
 
-            return validNeighbors;
+            return validNeighbors.ToHashSet();
         }
 
         public void GetAllConnectedParts(ref HashSet<AssemblyPart> connectedParts)
