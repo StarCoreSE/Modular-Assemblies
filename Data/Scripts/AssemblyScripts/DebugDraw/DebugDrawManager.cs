@@ -22,6 +22,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
         protected static readonly MyStringId MaterialSquare = MyStringId.GetOrCompute("Square");
 
         private Dictionary<Vector3D, MyTuple<long, Color>> QueuedPoints = new Dictionary<Vector3D, MyTuple<long, Color>>();
+        private Dictionary<IMyGps, long> QueuedGps = new Dictionary<IMyGps, long>();
         private Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>> QueuedGridPoints = new Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>>();
 
         private Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>> QueuedLinePoints = new Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>>();
@@ -50,8 +51,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
         public static void AddGPS(string name, Vector3D position, float duration)
         {
             IMyGps gps = MyAPIGateway.Session.GPS.Create(name, string.Empty, position, showOnHud: true, temporary: true);
-            gps.DiscardAt = MyAPIGateway.Session.ElapsedPlayTime.Add(new TimeSpan((long)(duration * TimeSpan.TicksPerSecond)));
-            MyAPIGateway.Session.GPS.AddLocalGps(gps);
+            //gps.DiscardAt = TimeSpan.FromSeconds(duration);
+            //MyAPIGateway.Session.GPS.AddLocalGps(gps);
+            Instance.QueuedGps.Add(gps, DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond));
         }
 
         public static void AddGridGPS(string name, Vector3I gridPosition, IMyCubeGrid grid, float duration)
@@ -92,6 +94,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
 
                 if (DateTime.Now.Ticks > QueuedPoints[key].Item1)
                     QueuedPoints.Remove(key);
+            }
+
+            foreach (var key in QueuedGps.Keys.ToList())
+            {
+                if (DateTime.Now.Ticks > QueuedGps[key])
+                {
+                    MyAPIGateway.Session.GPS.RemoveLocalGps(key);
+                    QueuedGps.Remove(key);
+                }
             }
 
             foreach (var key in QueuedGridPoints.Keys.ToList())

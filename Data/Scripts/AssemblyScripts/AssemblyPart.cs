@@ -64,8 +64,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public void DoConnectionCheck(bool cascadingUpdate = false)
         {
             ConnectedParts = GetValidNeighborParts();
-            if (Assemblies_SessionInit.DebugMode)
-                MyAPIGateway.Utilities.ShowMessage("Fusion Systems", "AddNeighbors: " + ConnectedParts.Count);
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
             if (ConnectedParts.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
