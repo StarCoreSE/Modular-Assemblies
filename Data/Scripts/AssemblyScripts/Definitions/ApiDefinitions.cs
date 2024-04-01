@@ -50,7 +50,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             PhysicalAssembly wep;
             if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
-                return new MyEntity[0];
+                return Array.Empty<MyEntity>();
 
             List<MyEntity> parts = new List<MyEntity>();
             foreach (var part in wep.ComponentParts)
@@ -62,12 +62,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         private MyEntity[] GetConnectedBlocks(MyEntity blockEntity, bool useCached)
         {
-            if (!(blockEntity is IMyCubeBlock))
-                return new MyEntity[0];
+            var block = blockEntity as IMyCubeBlock;
+            if (block == null)
+                return Array.Empty<MyEntity>();
 
             AssemblyPart wep;
-            if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(((IMyCubeBlock)blockEntity).SlimBlock, out wep) || wep.ConnectedParts == null)
-                return new MyEntity[0];
+            if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(block.SlimBlock, out wep) || wep.ConnectedParts == null)
+                return Array.Empty<MyEntity>();
 
             List<MyEntity> parts = new List<MyEntity>();
             if (useCached)

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -135,6 +136,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             MemberAssembly?.RemovePart(this);
             foreach (var neighbor in ConnectedParts)
                 neighbor.ConnectedParts.Remove(this);
+
+            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+            if (Block.Integrity <= 0)
+                DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
         }
 
         /// <summary>
