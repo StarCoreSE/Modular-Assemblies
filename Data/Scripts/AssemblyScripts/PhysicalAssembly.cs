@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -122,6 +123,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public void Close()
         {
             IsClosing = true;
+            AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
             if (ComponentParts != null)
             {
                 foreach (var part in ComponentParts)

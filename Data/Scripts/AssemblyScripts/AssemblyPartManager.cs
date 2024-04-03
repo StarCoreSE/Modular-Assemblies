@@ -32,6 +32,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         private HashSet<AssemblyPart> QueuedConnectionChecks = new HashSet<AssemblyPart>();
         private Dictionary<AssemblyPart, PhysicalAssembly> QueuedAssemblyChecks = new Dictionary<AssemblyPart, PhysicalAssembly>();
 
+        public Action<int> OnAssemblyClose;
+
         public void QueueBlockAdd(IMySlimBlock block) => QueuedBlockAdds.Add(block);
         public void QueueConnectionCheck(AssemblyPart part)
         {
@@ -62,6 +64,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             I = null; // important for avoiding this object to remain allocated in memory
             AllAssemblyParts.Clear();
             AllPhysicalAssemblies.Clear();
+            OnAssemblyClose = null;
 
             // None of this should run on client.
             //if (!MyAPIGateway.Multiplayer.IsServer)

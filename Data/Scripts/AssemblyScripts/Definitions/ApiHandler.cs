@@ -39,7 +39,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             // Should not run on clients.
             //if (!MyAPIGateway.Multiplayer.IsServer)
             //    return;
-
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
 
             IsReady = true;

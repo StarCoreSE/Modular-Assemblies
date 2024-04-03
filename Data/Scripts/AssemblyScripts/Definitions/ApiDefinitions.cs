@@ -24,6 +24,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
                 ["IsDebug"] = new Func<bool>(IsDebug),
                 ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
+                ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid),
+                ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose),
+                ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose),
             };
         }
 
@@ -106,6 +109,25 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return partKvp.Value.MemberAssembly.AssemblyId;
             }
             return -1;
+        }
+
+        private IMyCubeGrid GetAssemblyGrid(int assemblyId)
+        {
+            PhysicalAssembly wep;
+            if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
+                return null;
+
+            return wep.ComponentParts[0].Block.CubeGrid;
+        }
+
+        private void AddOnAssemblyClose(Action<int> action)
+        {
+            AssemblyPartManager.I.OnAssemblyClose += action;
+        }
+
+        private void RemoveOnAssemblyClose(Action<int> action)
+        {
+            AssemblyPartManager.I.OnAssemblyClose -= action;
         }
     }
 }
