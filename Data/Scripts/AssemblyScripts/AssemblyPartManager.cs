@@ -73,36 +73,71 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             MyAPIGateway.Entities.OnEntityRemove -= OnGridRemove;
         }
 
+
+
+        
+
+        
         public void UpdateAfterSimulation()
         {
             // Queue gridadds to account for world load/grid pasting
-            foreach (var queuedBlock in QueuedBlockAdds.ToList())
-            {
-                OnBlockAdd(queuedBlock);
-                QueuedBlockAdds.Remove(queuedBlock);
-            }
-
+            ProcessQueuedBlockAdds();
             // Queue partadds to account for world load/grid pasting
-            foreach (var queuedPart in QueuedConnectionChecks.ToList())
-            {
-                queuedPart.DoConnectionCheck();
-                QueuedConnectionChecks.Remove(queuedPart);
-            }
+            ProcessQueuedConnectionChecks();
 
-            // Queue assembly pathing to account for world load/grid pasting
-            foreach (var queuedAssembly in QueuedAssemblyChecks.Keys.ToList())
-            {
-                //QueuedAssemblyChecks[queuedAssembly].RecursiveAssemblyChecker(queuedAssembly);
-                QueuedAssemblyChecks.Remove(queuedAssembly);
-            }
+            ProcessQueuedAssemblyChecks();
 
             foreach (var assembly in AllPhysicalAssemblies.Values)
+            {
                 assembly.Update();
+            }
 
             if (Assemblies_SessionInit.DebugMode)
             {
-                MyAPIGateway.Utilities.ShowNotification("Assemblies: " + AllPhysicalAssemblies.Count + " | Parts: " + AllAssemblyParts.Count, 1000 / 60);
+                MyAPIGateway.Utilities.ShowNotification($"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {AllAssemblyParts.Count}", 1000 / 60);
                 MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}", 1000 / 60);
+            }
+        }
+
+        private void ProcessQueuedBlockAdds()
+        {
+            lock (QueuedBlockAdds)
+            {
+                foreach (var queuedBlock in QueuedBlockAdds)
+                {
+                    OnBlockAdd(queuedBlock);
+                }
+                QueuedBlockAdds.Clear();
+            }
+        }
+
+        private void ProcessQueuedConnectionChecks()
+        {
+            HashSet<AssemblyPart> queuedParts;
+            lock (QueuedConnectionChecks)
+            {
+                queuedParts = new HashSet<AssemblyPart>(QueuedConnectionChecks);
+                QueuedConnectionChecks.Clear();
+            }
+
+            foreach (var queuedPart in queuedParts)
+            {
+                queuedPart.DoConnectionCheck();
+            }
+        }
+
+        private void ProcessQueuedAssemblyChecks()
+        {
+            Dictionary<AssemblyPart, PhysicalAssembly> queuedAssemblies;
+            lock (QueuedAssemblyChecks)
+            {
+                queuedAssemblies = new Dictionary<AssemblyPart, PhysicalAssembly>(QueuedAssemblyChecks);
+                QueuedAssemblyChecks.Clear();
+            }
+
+            foreach (var queuedAssembly in queuedAssemblies)
+            {
+                queuedAssembly.Key.DoConnectionCheck();
             }
         }
 
@@ -128,6 +163,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         private void OnBlockAdd(IMySlimBlock block)
         {
+            if (block == null)
+                return;
             try
             {
                 foreach (var modularDefinition in DefinitionHandler.I.ModularDefinitions)
@@ -179,6 +216,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         private void OnBlockRemove(IMySlimBlock block)
         {
+            if (block == null)
+                return;
             AssemblyPart part;
             if (AllAssemblyParts.TryGetValue(block, out part))
             {

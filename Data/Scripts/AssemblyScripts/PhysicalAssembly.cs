@@ -48,7 +48,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 throw new Exception("Duplicate assembly ID!");
             AssemblyPartManager.I.AllPhysicalAssemblies.Add(id, this);
 
-            
+
             color = new Color(Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255));
 
             AddPart(basePart);
@@ -126,17 +126,20 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             {
                 foreach (var part in ComponentParts)
                 {
-                    if (part.MemberAssembly != this)
+                    //nullcheck for good luck :^)
+                    if (part?.MemberAssembly != this)
                         continue;
+
                     part.MemberAssembly = null;
                     part.ConnectedParts.Clear();
                 }
             }
-
             ComponentParts = null;
             //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
+
+        
 
         public void MergeWith(PhysicalAssembly assembly)
         {

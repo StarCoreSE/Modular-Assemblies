@@ -62,8 +62,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.I.QueueConnectionCheck(this);
         }
 
-        public void DoConnectionCheck(bool cascadingUpdate = false)
+        public void DoConnectionCheck(bool cascadingUpdate = false, HashSet<AssemblyPart> visited = null)
         {
+            if (visited == null)
+                visited = new HashSet<AssemblyPart>();
+
+            if (visited.Contains(this))
+                return;
+
+            visited.Add(this);
             ConnectedParts = GetValidNeighborParts();
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
@@ -124,11 +131,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Trigger cascading update
             if (IsBaseBlock || cascadingUpdate)
             {
-                MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+                //debug notification begone
+                //MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+
                 foreach (var neighbor in GetValidNeighborParts())
+                {
                     if (neighbor.MemberAssembly == null)
-                        neighbor.DoConnectionCheck(true);
+                        neighbor.DoConnectionCheck(true, visited);
+                }
             }
+
         }
 
         public void PartRemoved()
