@@ -1,6 +1,9 @@
 ﻿Modular Assemblies
 ================
 
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/StarCoreSE/Modular-Assemblies.svg)](http://isitmaintained.com/project/StarCoreSE/Modular-Assemblies "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/StarCoreSE/Modular-Assemblies.svg)](http://isitmaintained.com/project/StarCoreSE/Modular-Assemblies "Percentage of issues still open")
+
 Hey modders!
 
 This is a bit of a mess, so please bear with me. Ping [@aristeas.] on discord if you have any questions, comments, or concerns.
