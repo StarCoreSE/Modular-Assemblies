@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage;
 using VRage.Game.Components;
 using VRage.Utils;
@@ -13,13 +13,12 @@ using VRageMath;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate, Priority = 0)]
-    internal class ApiHandler : MySessionComponentBase
+    internal class ApiHandler
     {
         private const long Channel = 8774;
         public static readonly Vector2I ModVersion = new Vector2I(0, 1); // Mod version, API version
-        private readonly IReadOnlyDictionary<string, Delegate> _apiDefinitions = new ApiDefinitions().ModApiMethods;
-        private MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>> _endpointTuple;
+        private readonly IReadOnlyDictionary<string, Delegate> _apiDefinitions;
+        private readonly MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>> _endpointTuple;
 
         /// <summary>
         /// Is the API ready?
@@ -40,8 +39,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         /// <summary>
         /// Registers for API requests and updates any pre-existing clients.
         /// </summary>
-        public override void LoadData()
+        public ApiHandler()
         {
+            _apiDefinitions = new ApiDefinitions().ModApiMethods;
             _endpointTuple = new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(ModVersion, _apiDefinitions);
 
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
@@ -62,7 +62,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         /// <summary>
         /// Unloads all API endpoints and detaches events.
         /// </summary>
-        protected override void UnloadData()
+        public void Unload()
         {
             MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
 

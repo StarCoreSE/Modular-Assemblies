@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.Components;
 using VRage.Utils;
 

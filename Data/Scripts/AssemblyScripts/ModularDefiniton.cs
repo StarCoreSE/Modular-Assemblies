@@ -3,7 +3,7 @@ using Sandbox.Definitions;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;

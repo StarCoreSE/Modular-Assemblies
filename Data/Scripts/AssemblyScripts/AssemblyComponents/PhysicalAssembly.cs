@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -33,7 +34,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     foreach (var conPart in part.ConnectedParts)
                         DebugDrawManager.AddLine(DebugDrawManager.GridToGlobal(part.Block.Position, part.Block.CubeGrid), DebugDrawManager.GridToGlobal(conPart.Block.Position, part.Block.CubeGrid), color, 0f);
                 }
-                //DebugDrawManager.AddGPS($"ASM {AssemblyId} Parts: {ComponentParts.Count}", ComponentParts[0].Block.FatBlock.GetPosition(), 1/60f);
             }
         }
 
@@ -140,7 +140,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
 
-        
+
 
         public void MergeWith(PhysicalAssembly assembly)
         {

@@ -3,7 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -86,7 +86,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             if (AssembliesSessionInit.DebugMode)
             {
-                MyAPIGateway.Utilities.ShowNotification($"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {AllAssemblyParts.Count}", 1000 / 60);
+                int partCount = 0;
+                foreach (var definition in AllAssemblyParts)
+                    partCount += definition.Value.Count;
+                MyAPIGateway.Utilities.ShowNotification($"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {partCount}", 1000 / 60);
                 MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}", 1000 / 60);
             }
         }

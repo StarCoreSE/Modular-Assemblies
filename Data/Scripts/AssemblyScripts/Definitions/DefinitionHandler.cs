@@ -3,7 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage;
 using VRage.Game.Components;
 using VRage.Profiler;
@@ -20,9 +20,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
     internal class DefinitionHandler
     {
         public static DefinitionHandler I;
-        const int DefinitionMessageId = 8772;
-        const int InboundMessageId = 8773;
         const int OutboundMessageId = 8771;
+
+        internal ApiHandler ApiHandler;
 
         public Dictionary<string, ModularDefinition> ModularDefinitionsMap = new Dictionary<string, ModularDefinition>();
         public ICollection<ModularDefinition> ModularDefinitions => ModularDefinitionsMap.Values;
@@ -31,6 +31,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             I = this;
 
+            ApiHandler = new ApiHandler();
             ModularLog.Log("DefinitionHandler loading...");
             MyAPIGateway.Session.OnSessionReady += CheckValidDefinitions;
         }
@@ -40,6 +41,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             I = null;
             ModularLog.Log("DefinitionHandler closing...");
             MyAPIGateway.Session.OnSessionReady -= CheckValidDefinitions;
+            ApiHandler.Unload();
         }
 
         /// <summary>
@@ -184,7 +186,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 IsBaseBlock
             );
 
-            SendFunc(new FunctionCall()
+            SendFunc(new FunctionCall
             {
                 ActionId = FunctionCall.ActionType.OnPartDestroy,
                 DefinitionName = DefinitionName,

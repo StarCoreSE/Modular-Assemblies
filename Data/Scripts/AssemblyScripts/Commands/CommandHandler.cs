@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts

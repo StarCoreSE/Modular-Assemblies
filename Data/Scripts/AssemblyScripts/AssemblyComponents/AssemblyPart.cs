@@ -154,8 +154,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 if (Block.Integrity <= 0)
                     DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
             }
-
-            AssemblyPartManager.I.QueueConnectionCheck(this);
         }
 
         /// <summary>

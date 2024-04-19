@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug
+namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
 {
     public class SoftHandle
     {

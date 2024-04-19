@@ -7,20 +7,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug
+namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
 {
     /// <summary>
     /// Standard logging class. Outputs to %AppData%\Roaming\Space Engineers\Storage\
     /// </summary>
     public class ModularLog
     {
-        readonly TextWriter _writer;
+        private readonly TextWriter _writer;
         private static ModularLog I;
 
         public static void Log(string message)
         {
             I._Log(message);
         }
+
         public static void LogException(Exception ex, Type callingType, string prefix = "")
         {
             I._LogException(ex, callingType, prefix);
@@ -34,6 +35,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug
 
         private ModularLog()
         {
+            MyAPIGateway.Utilities.DeleteFileInGlobalStorage("ModularAssemblies.log");
             _writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("ModularAssemblies.log"); // Only creating one debug.log to avoid clutter. Might change in the future.
             _writer.WriteLine($"Modular Assemblies v{ApiHandler.ModVersion.X} - Debug Log\n===========================================\n");
             _writer.Flush();
@@ -54,6 +56,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug
             _writer.WriteLine($"{DateTime.UtcNow:HH:mm:ss}: {message}");
             _writer.Flush();
         }
+
         private void _LogException(Exception ex, Type callingType, string prefix = "")
         {
             if (ex == null)

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -118,7 +118,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 return;
 
             foreach (var part in assembly.ComponentParts)
+            {
                 part.PartRemoved();
+                AssemblyPartManager.I.QueueConnectionCheck(part);
+            }
         }
 
         #endregion
@@ -173,7 +176,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (definition == null)
                 return;
 
-            AssemblyPartManager.I.AllAssemblyParts[definition].GetValueOrDefault(block.SlimBlock, null)?.PartRemoved();
+            AssemblyPart part = AssemblyPartManager.I.AllAssemblyParts[definition].GetValueOrDefault(block.SlimBlock, null);
+            if (part != null)
+            {
+                part.PartRemoved();
+                AssemblyPartManager.I.QueueConnectionCheck(part);
+            }
         }
 
         #endregion
