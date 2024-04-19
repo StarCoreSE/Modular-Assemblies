@@ -36,6 +36,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
                 // TODO: RecreateConnections - Destroys connections and queues for search.
 
+                // Definition methods
+                ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions),
+                ["UnregisterDefinition"] = new Action<string>(DefinitionHandler.I.UnregisterDefinition),
+
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
                 ["LogWriteLine"] = new Action<string>(ModularLog.Log), // Writes a new line in the Modular Assemblies debug log.

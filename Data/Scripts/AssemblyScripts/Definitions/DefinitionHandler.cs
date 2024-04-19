@@ -9,6 +9,7 @@ using VRage.Game.Components;
 using VRage.Profiler;
 using VRage.Utils;
 using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
+using VRage.Game;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
@@ -22,81 +23,107 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         const int InboundMessageId = 8773;
         const int OutboundMessageId = 8771;
 
-        public List<ModularDefinition> ModularDefinitions = new List<ModularDefinition>();
+        public Dictionary<string, ModularDefinition> ModularDefinitionsMap = new Dictionary<string, ModularDefinition>();
+        public ICollection<ModularDefinition> ModularDefinitions => ModularDefinitionsMap.Values;
 
         public void Init()
         {
             I = this;
 
             ModularLog.Log("DefinitionHandler loading...");
-
-            MyAPIGateway.Utilities.RegisterMessageHandler(DefinitionMessageId, DefMessageHandler);
-            MyAPIGateway.Utilities.RegisterMessageHandler(InboundMessageId, ActionMessageHandler);
-            MyAPIGateway.Utilities.SendModMessage(OutboundMessageId, true);
-
             MyAPIGateway.Session.OnSessionReady += CheckValidDefinitions;
-            ModularLog.Log("Init DefinitionHandler.cs");
         }
 
         public void Unload()
         {
             I = null;
-
             ModularLog.Log("DefinitionHandler closing...");
-
-            MyAPIGateway.Utilities.UnregisterMessageHandler(DefinitionMessageId, DefMessageHandler);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(InboundMessageId, ActionMessageHandler);
+            MyAPIGateway.Session.OnSessionReady -= CheckValidDefinitions;
         }
 
-        public void DefMessageHandler(object o)
+        public string[] RegisterDefinitions(byte[] serialized)
+        {
+            if (serialized == null)
+                return Array.Empty<string>();
+
+            try
+            {
+                DefinitionContainer definitionSet = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(serialized);
+                return RegisterDefinitions(definitionSet);
+            }
+            catch (Exception ex)
+            {
+                ModularLog.Log($"Exception in DefinitionHandler.RegisterDefinitions: {ex}");
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string[] RegisterDefinitions(DefinitionContainer definitionSet)
         {
             try
             {
-                byte[] message = o as byte[];
-
-                if (message == null)
-                    return;
-
-                DefinitionContainer baseDefArray = null;
-                try
-                {
-                    baseDefArray = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(message);
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                if (baseDefArray != null)
-                {
-                    ModularLog.Log($"Received {baseDefArray.PhysicalDefs.Length} definitions.");
-                    foreach (var def in baseDefArray.PhysicalDefs)
-                    {
-                        var modDef = ModularDefinition.Load(def);
-                        if (modDef == null)
-                            continue;
-
-                        bool isDefinitionValid = true;
-                        // Check for duplicates
-                        foreach (var definition in ModularDefinitions)
-                        {
-                            if (definition.Name != modDef.Name)
-                                continue;
-
-                            ModularLog.Log($"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
-                            MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
-                            isDefinitionValid = false;
-                        }
-                        if (isDefinitionValid)
-                            ModularDefinitions.Add(modDef);
-                    }
-                }
-                else
+                if (definitionSet == null)
                 {
                     ModularLog.Log($"Invalid definition container!");
+                    return Array.Empty<string>();
                 }
+
+                ModularLog.Log($"Received {definitionSet.PhysicalDefs.Length} definitions.");
+                List<string> newValidDefinitions = new List<string>();
+
+                foreach (var def in definitionSet.PhysicalDefs)
+                {
+                    var modDef = ModularDefinition.Load(def);
+                    if (modDef == null)
+                        continue;
+
+                    bool isDefinitionValid = true;
+                    // Check for duplicates
+                    if (ModularDefinitionsMap.ContainsKey(modDef.Name))
+                    {
+                        ModularLog.Log($"Duplicate DefinitionName for definition {modDef.Name}! Skipping load...");
+                        MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
+                        isDefinitionValid = false;
+                    }
+
+                    if (!isDefinitionValid)
+                        continue;
+
+                    ModularDefinitionsMap.Add(modDef.Name, modDef);
+                    newValidDefinitions.Add(modDef.Name);
+                }
+
+                return newValidDefinitions.ToArray();
             }
-            catch (Exception ex) { ModularLog.Log($"Exception in DefinitionMessageHandler: {ex}"); }
+            catch (Exception ex) { ModularLog.Log($"Exception in DefinitionHandler.RegisterDefinitions: {ex}"); }
+
+            return Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Removes a definition and destroys all assemblies referencing it.
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <returns></returns>
+        public bool UnregisterDefinition(string definition)
+        {
+            if (!ModularDefinitionsMap.ContainsKey(definition))
+                return false;
+
+            foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values)
+            {
+                if (assembly.AssemblyDefinition.Name != definition)
+                    continue;
+
+                // TODO: Deregister parts. AssemblyPartManager.AllAssemblyParts as a Dictionary<Definition, Dictionary<IMySlimBlock, AssemblyPart>>?
+                //foreach (var part in assembly.ComponentParts)
+                //    AssemblyPartManager.I.AllAssemblyParts.Remove(part);
+                assembly.Close();
+            }
+
+            ModularDefinitionsMap.Remove(definition);
+            return true;
         }
 
         public void ActionMessageHandler(object o)
