@@ -7,21 +7,30 @@ using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
+    /// <summary>
+    /// Parses commands from chat and triggers relevant methods.
+    /// </summary>
     public class CommandHandler
     {
         public static CommandHandler I;
 
-        private Dictionary<string, Command> commands = new Dictionary<string, Command>()
+        private readonly Dictionary<string, Command> _commands = new Dictionary<string, Command>
         {
-            ["help"] = new Command("ModularAssemblies", "Displays command help.", message => I.ShowHelp()),
-            ["debug"] = new Command("ModularAssemblies", "Toggles debug draw.", message => AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode;),
+            ["help"] = new Command(
+                "Modular Assemblies",
+                "Displays command help.",
+                message => I.ShowHelp()),
+            ["debug"] = new Command(
+                "Modular Assemblies",
+                "Toggles debug draw.",
+                message => AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode),
         };
 
         private void ShowHelp()
         {
             StringBuilder helpBuilder = new StringBuilder();
             List<string> modNames = new List<string>();
-            foreach (var command in commands.Values)
+            foreach (var command in _commands.Values)
                 if (!modNames.Contains(command.modName))
                     modNames.Add(command.modName);
 
@@ -29,7 +38,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             foreach (var modName in modNames)
             {
-                foreach (var command in commands)
+                foreach (var command in _commands)
                     if (command.Value.modName == modName)
                         helpBuilder.Append($"\n{{!md {command.Key}}}: " + command.Value.helpText);
 
@@ -53,7 +62,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public static void Close()
         {
             if (I != null)
+            {
                 MyAPIGateway.Utilities.MessageEnteredSender -= I.Command_MessageEnteredSender;
+                I._commands.Clear();
+            }
             I = null;
         }
 
@@ -76,10 +88,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 }
 
                 // Really basic command handler
-                if (commands.ContainsKey(parts[0].ToLower()))
-                    commands[parts[0].ToLower()].action.Invoke(parts);
+                if (_commands.ContainsKey(parts[0].ToLower()))
+                    _commands[parts[0].ToLower()].action.Invoke(parts);
                 else
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Unrecognized command \"{messageText}\" ({sender})");
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Unrecognized command \"{parts[0].ToLower()}\"");
             }
             catch (Exception ex)
             {
@@ -98,14 +110,26 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (I == null)
                 return;
 
-            if (I.commands.ContainsKey(command))
+            if (I._commands.ContainsKey(command))
             {
                 SoftHandle.RaiseException("Attempted to add duplicate command " + command + " from [" + modName + "]", callingType: typeof(CommandHandler));
                 return;
             }
 
-            I.commands.Add(command, new Command(modName, helpText, action));
+            I._commands.Add(command, new Command(modName, helpText, action));
             ModularLog.Log($"Registered new chat command \"!{command}\" from [{modName}]");
+        }
+
+        /// <summary>
+        /// Removes a command from Modular Assemblies' command handler.
+        /// </summary>
+        /// <param name="command"></param>
+        public static void RemoveCommand(string command)
+        {
+            if (I == null || command == "help" || command == "debug") // Debug and Help should never be removed.
+                return;
+            if (I._commands.Remove(command))
+                ModularLog.Log($"De-registered chat command \"!{command}\".");
         }
 
         private class Command

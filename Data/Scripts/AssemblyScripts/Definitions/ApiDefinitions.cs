@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -17,16 +18,29 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             ModApiMethods = new Dictionary<string, Delegate>()
             {
-                ["GetAllParts"] = new Func<MyEntity[]>(GetAllParts),
-                ["GetAllAssemblies"] = new Func<int[]>(GetAllAssemblies),
-                ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts),
+                // Global assembly methods
+                ["GetAllParts"] = new Func<MyEntity[]>(GetAllParts), // Returns a MyEntity array of all CubeBlocks with Assembly parts.
+                ["GetAllAssemblies"] = new Func<int[]>(GetAllAssemblies), // Returns an int array of all Assembly IDs.
+
+                // Per-assembly methods
+                ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts), // Returns a MyEntity array of all CubeBlocks within a given Assembly ID.
+                ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
+                ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an action triggered on assembly removal.
+                ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an action triggered on assembly removal.
+                // TODO: RecreateAssembly - Destroys assembly and makes all contained blocks queue for search.
+                // TODO: Replace stupid dumb definition actions with nice fancy API methods.
+
+                // Per-part methods
                 ["GetConnectedBlocks"] = new Func<MyEntity, bool, MyEntity[]>(GetConnectedBlocks),
                 ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
-                ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode),
                 ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
-                ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid),
-                ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose),
-                ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose),
+                // TODO: RecreateConnections - Destroys connections and queues for search.
+
+                // Global methods
+                ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
+                ["LogWriteLine"] = new Action<string>(ModularLog.Log), // Writes a new line in the Modular Assemblies debug log.
+                ["AddChatCommand"] = new Action<string, string, Action<string[]>, string>(CommandHandler.AddCommand), // Registers a command for Modular Assemblies' command handler.
+                ["RemoveChatCommand"] = new Action<string>(CommandHandler.RemoveCommand), // Removes a command from Modular Assemblies' command handler.
             };
         }
 

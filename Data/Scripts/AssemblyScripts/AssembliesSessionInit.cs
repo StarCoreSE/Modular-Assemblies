@@ -65,6 +65,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             I = null;
             watch.Stop();
             ModularLog.Log($"Finished unloading in {watch.ElapsedMilliseconds}ms.");
+            ModularLog.Close();
         }
 
         #endregion

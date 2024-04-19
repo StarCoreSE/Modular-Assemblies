@@ -17,7 +17,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
     internal class ApiHandler : MySessionComponentBase
     {
         private const long Channel = 8774;
-        public static readonly Vector2I ModVersion = new Vector2I(0, 0); // Mod version, API version
+        public static readonly Vector2I ModVersion = new Vector2I(0, 1); // Mod version, API version
         private readonly IReadOnlyDictionary<string, Delegate> _apiDefinitions = new ApiDefinitions().ModApiMethods;
         private MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>> _endpointTuple;
 
@@ -55,7 +55,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 ModularLog.Log($"Exception in Api Load: {ex}"); 
             }
-            ModularLog.Log("ModularDefinitionsAPI inited.");
+            ModularLog.Log($"ModularDefinitionsAPI v{ModVersion.Y} initialized.");
         }
 
 
