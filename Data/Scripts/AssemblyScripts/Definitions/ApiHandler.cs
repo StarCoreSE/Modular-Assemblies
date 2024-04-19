@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
+using VRage;
 using VRage.Game.Components;
 using VRage.Utils;
+using VRageMath;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
@@ -13,7 +17,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
     internal class ApiHandler : MySessionComponentBase
     {
         private const long Channel = 8774;
-        private Dictionary<string, Delegate> _apiDefinitions = new ApiDefinitions().ModApiMethods;
+        public static readonly Vector2I ModVersion = new Vector2I(0, 0); // Mod version, API version
+        private readonly IReadOnlyDictionary<string, Delegate> _apiDefinitions = new ApiDefinitions().ModApiMethods;
+        private MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>> _endpointTuple;
 
         /// <summary>
         /// Is the API ready?
@@ -24,11 +30,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             if ((o as string) == "ApiEndpointRequest")
             {
-                MyAPIGateway.Utilities.SendModMessage(Channel, _apiDefinitions);
-                MyLog.Default.WriteLineAndConsole("ModularAssemblies: ModularDefinitionsAPI start load.");
+                MyAPIGateway.Utilities.SendModMessage(Channel, _endpointTuple);
+                ModularLog.Log("ModularDefinitionsAPI sent definitions.");
             }
             else
-                MyLog.Default.WriteLineAndConsole($"ModularAssemblies: ModularDefinitionsAPI ignored message {o as string}.");
+                ModularLog.Log($"ModularDefinitionsAPI ignored message {o as string}.");
         }
 
         /// <summary>
@@ -36,9 +42,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         /// </summary>
         public override void LoadData()
         {
-            // Should not run on clients.
-            //if (!MyAPIGateway.Multiplayer.IsServer)
-            //    return;
+            _endpointTuple = new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(ModVersion, _apiDefinitions);
+
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
 
             IsReady = true;
@@ -48,9 +53,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             }
             catch (Exception ex)
             {
-                MyLog.Default.WriteLineAndConsole($"Exception in Api Load: {ex}"); 
+                ModularLog.Log($"Exception in Api Load: {ex}"); 
             }
-            MyLog.Default.WriteLineAndConsole("ModularAssemblies: ModularDefinitionsAPI inited.");
+            ModularLog.Log("ModularDefinitionsAPI inited.");
         }
 
 
@@ -64,7 +69,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             IsReady = false;
             MyAPIGateway.Utilities.SendModMessage(Channel, new Dictionary<string, Delegate>());
 
-            MyLog.Default.WriteLineAndConsole("ModularAssemblies: ModularDefinitionsAPI unloaded.");
+            ModularLog.Log("ModularDefinitionsAPI unloaded.");
         }
     }
 }

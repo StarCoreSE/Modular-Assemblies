@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -47,7 +48,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void Init()
         {
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: AssemblyPartManager loading...");
+            ModularLog.Log("AssemblyPartManager loading...");
 
             I = this;
 
@@ -70,7 +71,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             //if (!MyAPIGateway.Multiplayer.IsServer)
             //    return;
 
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: AssemblyPartManager closing...");
+            ModularLog.Log("AssemblyPartManager closing...");
 
             MyAPIGateway.Entities.OnEntityAdd -= OnGridAdd;
             MyAPIGateway.Entities.OnEntityRemove -= OnGridRemove;
@@ -95,7 +96,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 assembly.Update();
             }
 
-            if (Assemblies_SessionInit.DebugMode)
+            if (AssembliesSessionInit.DebugMode)
             {
                 MyAPIGateway.Utilities.ShowNotification($"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {AllAssemblyParts.Count}", 1000 / 60);
                 MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}", 1000 / 60);
@@ -182,7 +183,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
             catch (Exception e)
             {
-                MyLog.Default.WriteLineAndConsole("Handled exception in Modular Assemblies.AssemblyPartManager.OnBlockAdd()!\n" + e.ToString());
+                ModularLog.Log("Handled exception in AssemblyPartManager.OnBlockAdd()!\n" + e);
             }
         }
 

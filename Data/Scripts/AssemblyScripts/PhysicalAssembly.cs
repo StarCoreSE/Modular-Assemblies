@@ -25,7 +25,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void Update()
         {
-            if (Assemblies_SessionInit.DebugMode)
+            if (AssembliesSessionInit.DebugMode)
             {
                 foreach (var part in ComponentParts)
                 {
@@ -49,8 +49,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 throw new Exception("Duplicate assembly ID!");
             AssemblyPartManager.I.AllPhysicalAssemblies.Add(id, this);
 
-
-            color = new Color(Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255), Assemblies_SessionInit.I.random.Next(255));
+            
+            color = new Color(AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255));
 
             AddPart(basePart);
             AssemblyPartManager.I.QueueAssemblyCheck(basePart, this);

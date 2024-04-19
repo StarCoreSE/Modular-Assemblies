@@ -2,39 +2,42 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage.Game.Components;
 using VRage.Utils;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
-    public class Assemblies_SessionInit : MySessionComponentBase
+    public class AssembliesSessionInit : MySessionComponentBase
     {
-        public static Assemblies_SessionInit I;
+        public static AssembliesSessionInit I;
         AssemblyPartManager AssemblyPartManager = new AssemblyPartManager();
         DefinitionHandler DefinitionHandler = new DefinitionHandler();
         public static bool DebugMode = false;
-        public Random random = new Random();
+        public Random Random = new Random();
 
         #region Base Methods
 
         public override void LoadData()
         {
+            Stopwatch watch = Stopwatch.StartNew();
+
             I = this;
+            ModularLog.Init();
 
             AssemblyPartManager.Init();
             DefinitionHandler.Init();
 
-            //if (!MyAPIGateway.Multiplayer.MultiplayerActive)
-            //{
-                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Run !mwHelp for commands.");
-                MyAPIGateway.Utilities.MessageEnteredSender += ChatCommandHandler;
-            //}
-            //else
-            //    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Commands disabled, load into a singleplayer world for testing. | {DefinitionHandler.I.ModularDefinitions.Count} definitions loaded.");
+            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{ApiHandler.ModVersion.X}", "Run !mwHelp for commands.");
+            MyAPIGateway.Utilities.MessageEnteredSender += ChatCommandHandler;
+
+            watch.Stop();
+            ModularLog.Log($"Fully initialized in {watch.ElapsedMilliseconds}ms.");
         }
 
         public override void UpdateAfterSimulation()
@@ -45,26 +48,24 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
             catch (Exception e)
             {
-                MyLog.Default.WriteLineAndConsole("Handled exception in Modular Assemblies!\n" + e.ToString());
+                ModularLog.Log("Handled exception in Modular Assemblies!\n" + e);
             }
         }
 
         protected override void UnloadData()
         {
-            // None of this should run on client.
+            Stopwatch watch = Stopwatch.StartNew();
 
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: AssemblyPartManager closing...");
+            ModularLog.Log("\n===========================================\nUnload started...");
 
-            //if (!MyAPIGateway.Multiplayer.MultiplayerActive)
-            //{
-                MyAPIGateway.Utilities.MessageEnteredSender -= ChatCommandHandler;
-            //}
+            MyAPIGateway.Utilities.MessageEnteredSender -= ChatCommandHandler;
 
             AssemblyPartManager.Unload();
             DefinitionHandler.Unload();
 
             I = null;
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: Finished unloading.");
+            watch.Stop();
+            ModularLog.Log($"Finished unloading in {watch.ElapsedMilliseconds}ms.");
         }
 
         #endregion

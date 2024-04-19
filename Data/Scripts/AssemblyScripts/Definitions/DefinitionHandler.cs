@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage;
 using VRage.Game.Components;
 using VRage.Profiler;
@@ -27,21 +28,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             I = this;
 
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: DefinitionHandler loading...");
+            ModularLog.Log("DefinitionHandler loading...");
 
             MyAPIGateway.Utilities.RegisterMessageHandler(DefinitionMessageId, DefMessageHandler);
             MyAPIGateway.Utilities.RegisterMessageHandler(InboundMessageId, ActionMessageHandler);
             MyAPIGateway.Utilities.SendModMessage(OutboundMessageId, true);
 
             MyAPIGateway.Session.OnSessionReady += CheckValidDefinitions;
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: Init DefinitionHandler.cs");
+            ModularLog.Log("Init DefinitionHandler.cs");
         }
 
         public void Unload()
         {
             I = null;
 
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: DefinitionHandler closing...");
+            ModularLog.Log("DefinitionHandler closing...");
 
             MyAPIGateway.Utilities.UnregisterMessageHandler(DefinitionMessageId, DefMessageHandler);
             MyAPIGateway.Utilities.UnregisterMessageHandler(InboundMessageId, ActionMessageHandler);
@@ -68,7 +69,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
                 if (baseDefArray != null)
                 {
-                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Received {baseDefArray.PhysicalDefs.Length} definitions.");
+                    ModularLog.Log($"Received {baseDefArray.PhysicalDefs.Length} definitions.");
                     foreach (var def in baseDefArray.PhysicalDefs)
                     {
                         var modDef = ModularDefinition.Load(def);
@@ -82,7 +83,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                             if (definition.Name != modDef.Name)
                                 continue;
 
-                            MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
+                            ModularLog.Log($"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
                             MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
                             isDefinitionValid = false;
                         }
@@ -92,10 +93,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 }
                 else
                 {
-                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Invalid definition container!");
+                    ModularLog.Log($"Invalid definition container!");
                 }
             }
-            catch (Exception ex) { MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Exception in DefinitionMessageHandler: {ex}"); }
+            catch (Exception ex) { ModularLog.Log($"Exception in DefinitionMessageHandler: {ex}"); }
         }
 
         public void ActionMessageHandler(object o)
@@ -114,12 +115,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
                 if (functionCall != null)
                 {
-                    //MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Recieved action of type {functionCall.ActionId}.");
+                    //ModularLog.Log($"ModularAssemblies: Recieved action of type {functionCall.ActionId}.");
 
                     PhysicalAssembly wep = AssemblyPartManager.I.AllPhysicalAssemblies[functionCall.PhysicalAssemblyId];
                     if (wep == null)
                     {
-                        MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Invalid PhysicalAssembly!");
+                        ModularLog.Log($"Invalid PhysicalAssembly!");
                         return;
                     }
 
@@ -135,10 +136,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 }
                 else
                 {
-                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: functionCall null!");
+                    ModularLog.Log($"functionCall null!");
                 }
             }
-            catch (Exception ex) { MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Exception in ActionMessageHandler: {ex}"); }
+            catch (Exception ex) { ModularLog.Log($"Exception in ActionMessageHandler: {ex}"); }
         }
 
         public void SendOnPartAdd(string DefinitionName, int PhysicalAssemblyId, long BlockEntityId, bool IsBaseBlock)
@@ -195,7 +196,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         private void SendFunc(FunctionCall call)
         {
             MyAPIGateway.Utilities.SendModMessage(OutboundMessageId, MyAPIGateway.Utilities.SerializeToBinary(call));
-            //MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Sending function call [id {call.ActionId}] to [{call.DefinitionName}].");
+            //ModularLog.Log($"ModularAssemblies: Sending function call [id {call.ActionId}] to [{call.DefinitionName}].");
         }
 
         private void CheckValidDefinitions()
@@ -222,7 +223,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 if (!validSubtypes.Contains(subtypeId))
                 {
-                    MyLog.Default.WriteLineAndConsole($"ModularAssemblies: Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
+                    ModularLog.Log($"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
                     MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
                 }
             }

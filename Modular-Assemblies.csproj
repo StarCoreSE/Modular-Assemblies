@@ -8,7 +8,7 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <AssemblyName>ClassLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-	<LangVersion>6.0</LangVersion>
+    <LangVersion>6.0</LangVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -114,17 +114,16 @@
     <None Include=".vs\slnx.sqlite" />
     <None Include=".vs\VSWorkspaceState.json" />
     <None Include="copy to DS and client.bat" />
-    <None Include="Data\Scripts\AssemblyScripts\Client\ClientSync.cs.disabled" />
-    <None Include="Data\Scripts\AssemblyScripts\Client\ClientSyncDefinitions.cs.disabled" />
     <None Include="Data\Scripts\AssemblyScripts\pressrtest.cs.disabled" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Scripts\AssemblyScripts\Assemblies_SessionInit.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssembliesSessionInit.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPart.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPartManager.cs" />
-    <Compile Include="Data\Scripts\AssemblyScripts\DebugDraw\DebugDrawManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Debug\DebugDrawManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Debug\ModularLog.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiDefinitions.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionDefs.cs" />

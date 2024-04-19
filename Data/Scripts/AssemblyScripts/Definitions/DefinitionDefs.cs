@@ -87,8 +87,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 floatValues = floatValuesL.ToArray();
                 boolValues = boolValuesL.ToArray();
                 doubleValues = doubleValuesL.ToArray();
-
-                //MyLog.Default.WriteLineAndConsole($"ModularDefinitions.DefinitionDefs: {array.Length} values packaged.");
             }
 
             [ProtoMember(1)] internal int[] intValues = new int[0];
@@ -121,7 +119,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 foreach (var value in doubleValues)
                     values.Add(value);
 
-                //MyLog.Default.WriteLineAndConsole($"ModularDefinitions.DefinitionDefs: {values.Count} values recieved.");
                 return values.ToArray();
             }
         }

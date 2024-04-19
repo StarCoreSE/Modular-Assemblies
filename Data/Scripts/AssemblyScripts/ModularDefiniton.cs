@@ -3,6 +3,7 @@ using Sandbox.Definitions;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -33,12 +34,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             
             if (def.AllowedBlocks == null || def.AllowedConnections == null || def.Name == null)
             {
-                MyLog.Default.WriteLineAndConsole("Modular Assemblies: Failed to create new ModularDefinition for " + definition.Name);
+                ModularLog.Log("Failed to create new ModularDefinition for " + definition.Name);
                 MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", "Failed to create new ModularDefinition for " + definition.Name);
                 return null;
             }
 
-            MyLog.Default.WriteLineAndConsole("Modular Assemblies: Created new ModularDefinition for " + definition.Name);
+            ModularLog.Log("Created new ModularDefinition for " + definition.Name);
             return def;
         }
 
@@ -63,18 +64,18 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     // If list is empty OR block is not in whitelist, continue.
                     if (allowedPosKvp.Value?.Length == 0 || !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.Id.SubtypeName) ?? true))
                     {
-                        if (Assemblies_SessionInit.DebugMode)
+                        if (AssembliesSessionInit.DebugMode)
                             DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Red, 3);
                         continue;
                     }
 
                     if (offsetAllowedPos.IsInsideInclusiveEnd(adajent.Min, adajent.Max))
                     {
-                        if (Assemblies_SessionInit.DebugMode)
+                        if (AssembliesSessionInit.DebugMode)
                             DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Green, 3);
                         return true;
                     }
-                    if (Assemblies_SessionInit.DebugMode)
+                    if (AssembliesSessionInit.DebugMode)
                         DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Red, 3);
                 }
                 return false;

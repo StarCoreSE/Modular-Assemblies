@@ -32,7 +32,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         private bool IsDebug()
         {
-            return Assemblies_SessionInit.DebugMode;
+            return AssembliesSessionInit.DebugMode;
         }
 
         private MyEntity[] GetAllParts()
