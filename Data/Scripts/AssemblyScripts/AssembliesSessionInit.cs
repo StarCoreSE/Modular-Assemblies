@@ -33,8 +33,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.Init();
             DefinitionHandler.Init();
 
-            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{ApiHandler.ModVersion.X}", "Run !mwHelp for commands.");
-            MyAPIGateway.Utilities.MessageEnteredSender += ChatCommandHandler;
+            CommandHandler.Init();
 
             watch.Stop();
             ModularLog.Log($"Fully initialized in {watch.ElapsedMilliseconds}ms.");
@@ -58,7 +57,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             ModularLog.Log("\n===========================================\nUnload started...");
 
-            MyAPIGateway.Utilities.MessageEnteredSender -= ChatCommandHandler;
+            CommandHandler.Close();
 
             AssemblyPartManager.Unload();
             DefinitionHandler.Unload();
@@ -69,24 +68,5 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         }
 
         #endregion
-
-        private void ChatCommandHandler(ulong sender, string messageText, ref bool sendToOthers)
-        {
-            if (!messageText.StartsWith("!"))
-                return;
-
-            string[] split = messageText.Split(' ');
-            switch (split[0].ToLower())
-            {
-                case "!mwhelp":
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", "Commands:\n!mwHelp - Prints all commands\n!mwDebug - Toggles debug draw");
-                    sendToOthers = false;
-                    break;
-                case "!mwdebug":
-                    DebugMode = !DebugMode;
-                    sendToOthers = false;
-                    break;
-            }
-        }
     }
 }

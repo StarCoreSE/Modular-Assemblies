@@ -122,8 +122,11 @@
     <Compile Include="Data\Scripts\AssemblyScripts\AssembliesSessionInit.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPart.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPartManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Commands\DebugCommands.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Commands\CommandHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Debug\DebugDrawManager.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Debug\ModularLog.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Debug\SoftHandle.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiDefinitions.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionDefs.cs" />
