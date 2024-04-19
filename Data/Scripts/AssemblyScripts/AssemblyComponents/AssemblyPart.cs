@@ -67,10 +67,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (visited == null)
                 visited = new HashSet<AssemblyPart>();
 
-            if (visited.Contains(this))
+            if (!visited.Add(this))
                 return;
 
-            visited.Add(this);
             ConnectedParts = GetValidNeighborParts();
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
@@ -143,15 +142,20 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         }
 
-        public void PartRemoved()
+        public void PartRemoved(bool notifyMods = true)
         {
             MemberAssembly?.RemovePart(this);
             foreach (var neighbor in ConnectedParts)
                 neighbor.ConnectedParts.Remove(this);
 
-            DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
-            if (Block.Integrity <= 0)
-                DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+            if (notifyMods)
+            {
+                DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+                if (Block.Integrity <= 0)
+                    DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+            }
+
+            AssemblyPartManager.I.QueueConnectionCheck(this);
         }
 
         /// <summary>

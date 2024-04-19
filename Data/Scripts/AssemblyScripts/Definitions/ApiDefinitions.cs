@@ -29,18 +29,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
                 ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
                 ["RecreateAssembly"] = new Action<int>(RecreateAssembly),
-                // TODO: RecreateAssembly - Destroys assembly and makes all contained blocks queue for search.
-                // TODO: Replace stupid dumb definition actions with nice fancy API methods.
 
                 // Per-part methods
                 ["GetConnectedBlocks"] = new Func<IMyCubeBlock, string, bool, IMyCubeBlock[]>(GetConnectedBlocks),
                 ["GetContainingAssembly"] = new Func<IMyCubeBlock, string, int>(GetContainingAssembly),
-                // TODO: RecreateConnections - Destroys connections and queues for search.
+                ["RecreateConnections"] = new Action<IMyCubeBlock, string>(RecreateConnections),
 
                 // Definition methods
-                ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions),
-                ["UnregisterDefinition"] = new Func<string, bool>(DefinitionHandler.I.UnregisterDefinition),
-                ["GetAllDefinitions"] = new Func<string[]>(() => DefinitionHandler.I.ModularDefinitionsMap.Keys.ToArray()),
+                ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions), // Tries to register a new definition.
+                ["UnregisterDefinition"] = new Func<string, bool>(DefinitionHandler.I.UnregisterDefinition), // Tries to de-register a definition.
+                ["GetAllDefinitions"] = new Func<string[]>(() => DefinitionHandler.I.ModularDefinitionsMap.Keys.ToArray()), // Returns a list of all definition names.
 
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
@@ -49,6 +47,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["RemoveChatCommand"] = new Action<string>(CommandHandler.RemoveCommand), // Removes a command from Modular Assemblies' command handler.
             };
         }
+
+        #region Global Assembly Methods
 
         private IMyCubeBlock[] GetAllParts()
         {
@@ -65,6 +65,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return AssemblyPartManager.I.AllPhysicalAssemblies.Keys.ToArray();
         }
 
+        #endregion
+
+        #region Per-Assembly Methods
+
         private IMyCubeBlock[] GetMemberParts(int assemblyId)
         {
             PhysicalAssembly wep;
@@ -74,10 +78,52 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             List<IMyCubeBlock> parts = new List<IMyCubeBlock>();
             foreach (var part in wep.ComponentParts)
                 if (part.Block.FatBlock != null)
-                    parts.Add((IMyCubeBlock)part.Block.FatBlock);
+                    parts.Add(part.Block.FatBlock);
 
             return parts.ToArray();
         }
+
+        private IMyCubeBlock GetBasePart(int assemblyId)
+        {
+            PhysicalAssembly wep;
+            if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
+                return null;
+
+            return null;  //wep.basePart?.block?.FatBlock as IMyCubeBlock;
+        }
+
+        private IMyCubeGrid GetAssemblyGrid(int assemblyId)
+        {
+            PhysicalAssembly wep;
+            if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
+                return null;
+
+            return wep.ComponentParts[0].Block.CubeGrid;
+        }
+
+        private void AddOnAssemblyClose(Action<int> action)
+        {
+            AssemblyPartManager.I.OnAssemblyClose += action;
+        }
+
+        private void RemoveOnAssemblyClose(Action<int> action)
+        {
+            AssemblyPartManager.I.OnAssemblyClose -= action;
+        }
+
+        private void RecreateAssembly(int assemblyId)
+        {
+            PhysicalAssembly assembly = AssemblyPartManager.I.AllPhysicalAssemblies.GetValueOrDefault(assemblyId, null);
+            if (assembly == null)
+                return;
+
+            foreach (var part in assembly.ComponentParts)
+                part.PartRemoved();
+        }
+
+        #endregion
+
+        #region Per-Part Methods
 
         private IMyCubeBlock[] GetConnectedBlocks(IMyCubeBlock block, string definitionName, bool useCached)
         {
@@ -106,15 +152,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return parts.ToArray();
         }
 
-        private IMyCubeBlock GetBasePart(int assemblyId)
-        {
-            PhysicalAssembly wep;
-            if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
-                return null;
-
-            return null;  //wep.basePart?.block?.FatBlock as IMyCubeBlock;
-        }
-
         private int GetContainingAssembly(IMyCubeBlock block, string definitionName)
         {
             ModularDefinition definition = DefinitionHandler.TryGetDefinition(definitionName);
@@ -130,28 +167,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return -1;
         }
 
-        private IMyCubeGrid GetAssemblyGrid(int assemblyId)
+        private void RecreateConnections(IMyCubeBlock block, string definitionName)
         {
-            PhysicalAssembly wep;
-            if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
-                return null;
+            ModularDefinition definition = DefinitionHandler.TryGetDefinition(definitionName);
+            if (definition == null)
+                return;
 
-            return wep.ComponentParts[0].Block.CubeGrid;
+            AssemblyPartManager.I.AllAssemblyParts[definition].GetValueOrDefault(block.SlimBlock, null)?.PartRemoved();
         }
 
-        private void AddOnAssemblyClose(Action<int> action)
-        {
-            AssemblyPartManager.I.OnAssemblyClose += action;
-        }
-
-        private void RemoveOnAssemblyClose(Action<int> action)
-        {
-            AssemblyPartManager.I.OnAssemblyClose -= action;
-        }
-
-        private void RecreateAssembly(int assemblyId)
-        {
-
-        }
+        #endregion
     }
 }
