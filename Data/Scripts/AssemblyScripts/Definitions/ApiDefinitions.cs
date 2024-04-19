@@ -22,17 +22,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts),
                 ["GetConnectedBlocks"] = new Func<MyEntity, bool, MyEntity[]>(GetConnectedBlocks),
                 ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
-                ["IsDebug"] = new Func<bool>(IsDebug),
+                ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode),
                 ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
                 ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid),
                 ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose),
                 ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose),
             };
-        }
-
-        private bool IsDebug()
-        {
-            return AssembliesSessionInit.DebugMode;
         }
 
         private MyEntity[] GetAllParts()

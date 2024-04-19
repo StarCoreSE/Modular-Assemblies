@@ -120,8 +120,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\AssemblyScripts\AssembliesSessionInit.cs" />
-    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPart.cs" />
-    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyPartManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPart.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPartManager.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Debug\DebugDrawManager.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Debug\ModularLog.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiDefinitions.cs" />
@@ -129,7 +129,7 @@
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionDefs.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\ModularDefiniton.cs" />
-    <Compile Include="Data\Scripts\AssemblyScripts\PhysicalAssembly.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\PhysicalAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".git\objects\info\" />
