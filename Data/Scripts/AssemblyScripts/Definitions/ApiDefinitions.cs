@@ -25,8 +25,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 // Per-assembly methods
                 ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts), // Returns a MyEntity array of all CubeBlocks within a given Assembly ID.
                 ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
-                ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an action triggered on assembly removal.
-                ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an action triggered on assembly removal.
+                ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
+                ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
                 // TODO: RecreateAssembly - Destroys assembly and makes all contained blocks queue for search.
                 // TODO: Replace stupid dumb definition actions with nice fancy API methods.
 
