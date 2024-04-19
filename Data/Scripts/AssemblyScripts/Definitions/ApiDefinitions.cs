@@ -24,6 +24,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
                 // Per-assembly methods
                 ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts), // Returns a MyEntity array of all CubeBlocks within a given Assembly ID.
+                ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
                 ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
                 ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
                 ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
@@ -32,7 +33,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
                 // Per-part methods
                 ["GetConnectedBlocks"] = new Func<MyEntity, bool, MyEntity[]>(GetConnectedBlocks),
-                ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
                 ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
                 // TODO: RecreateConnections - Destroys connections and queues for search.
 

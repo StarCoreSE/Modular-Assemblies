@@ -49,7 +49,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             IsReady = true;
             try
             {
-                MyAPIGateway.Utilities.SendModMessage(Channel, _apiDefinitions);
+                MyAPIGateway.Utilities.SendModMessage(Channel, _endpointTuple);
             }
             catch (Exception ex)
             {
@@ -67,7 +67,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
 
             IsReady = false;
-            MyAPIGateway.Utilities.SendModMessage(Channel, new Dictionary<string, Delegate>());
+            // Clear API client's endpoints
+            MyAPIGateway.Utilities.SendModMessage(Channel, new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(ModVersion, null));
 
             ModularLog.Log("ModularDefinitionsAPI unloaded.");
         }
