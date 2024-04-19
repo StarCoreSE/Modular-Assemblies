@@ -126,6 +126,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return true;
         }
 
+        public static ModularDefinition TryGetDefinition(string definitionName) => I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
         public void ActionMessageHandler(object o)
         {
             try

@@ -19,9 +19,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public static AssemblyPartManager I;
 
         /// <summary>
-        /// Every single AssemblyPart in the world.
+        /// Every single AssemblyPart in the world, mapped to definitions.
         /// </summary>
-        public Dictionary<IMySlimBlock, AssemblyPart> AllAssemblyParts = new Dictionary<IMySlimBlock, AssemblyPart>();
+        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts = new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
 
         /// <summary>
         /// Every single PhysicalAssembly in the world.
@@ -184,19 +184,22 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             List<AssemblyPart> toRemove = new List<AssemblyPart>();
             HashSet<PhysicalAssembly> toRemoveAssemblies = new HashSet<PhysicalAssembly>();
-            foreach (var partKvp in AllAssemblyParts)
+            foreach (var definitionPartSet in AllAssemblyParts.Values)
             {
-                if (partKvp.Key.CubeGrid == grid)
+                foreach (var partKvp in definitionPartSet)
                 {
-                    toRemove.Add(partKvp.Value);
-                    if (partKvp.Value.MemberAssembly != null)
-                        toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
+                    if (partKvp.Key.CubeGrid == grid)
+                    {
+                        toRemove.Add(partKvp.Value);
+                        if (partKvp.Value.MemberAssembly != null)
+                            toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
+                    }
                 }
             }
             foreach (var deadAssembly in toRemoveAssemblies)
                 deadAssembly.Close();
             foreach (var deadPart in toRemove)
-                AllAssemblyParts.Remove(deadPart.Block);
+                AllAssemblyParts[deadPart.AssemblyDefinition].Remove(deadPart.Block);
         }
 
         private void OnBlockRemove(IMySlimBlock block)
@@ -204,10 +207,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (block == null)
                 return;
             AssemblyPart part;
-            if (AllAssemblyParts.TryGetValue(block, out part))
+            foreach (var definitionPartSet in AllAssemblyParts.Values)
             {
-                part.PartRemoved();
-                AllAssemblyParts.Remove(block);
+                if (definitionPartSet.TryGetValue(block, out part))
+                {
+                    part.PartRemoved();
+                    AllAssemblyParts[part.AssemblyDefinition].Remove(block);
+                }
             }
         }
     }

@@ -19,12 +19,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             ModApiMethods = new Dictionary<string, Delegate>()
             {
                 // Global assembly methods
-                ["GetAllParts"] = new Func<MyEntity[]>(GetAllParts), // Returns a MyEntity array of all CubeBlocks with Assembly parts.
+                ["GetAllParts"] = new Func<IMyCubeBlock[]>(GetAllParts), // Returns a IMyCubeBlock array of all CubeBlocks with Assembly parts.
                 ["GetAllAssemblies"] = new Func<int[]>(GetAllAssemblies), // Returns an int array of all Assembly IDs.
 
                 // Per-assembly methods
-                ["GetMemberParts"] = new Func<int, MyEntity[]>(GetMemberParts), // Returns a MyEntity array of all CubeBlocks within a given Assembly ID.
-                ["GetBasePart"] = new Func<int, MyEntity>(GetBasePart),
+                ["GetMemberParts"] = new Func<int, IMyCubeBlock[]>(GetMemberParts), // Returns a IMyCubeBlock array of all CubeBlocks within a given Assembly ID.
+                ["GetBasePart"] = new Func<int, IMyCubeBlock>(GetBasePart),
                 ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
                 ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
                 ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
@@ -32,13 +32,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 // TODO: Replace stupid dumb definition actions with nice fancy API methods.
 
                 // Per-part methods
-                ["GetConnectedBlocks"] = new Func<MyEntity, bool, MyEntity[]>(GetConnectedBlocks),
-                ["GetContainingAssembly"] = new Func<MyEntity, int>(GetContainingAssembly),
+                ["GetConnectedBlocks"] = new Func<IMyCubeBlock, string, bool, IMyCubeBlock[]>(GetConnectedBlocks),
+                ["GetContainingAssembly"] = new Func<IMyCubeBlock, string, int>(GetContainingAssembly),
                 // TODO: RecreateConnections - Destroys connections and queues for search.
 
                 // Definition methods
                 ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions),
-                ["UnregisterDefinition"] = new Action<string>(DefinitionHandler.I.UnregisterDefinition),
+                ["UnregisterDefinition"] = new Func<string, bool>(DefinitionHandler.I.UnregisterDefinition),
 
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
@@ -48,12 +48,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             };
         }
 
-        private MyEntity[] GetAllParts()
+        private IMyCubeBlock[] GetAllParts()
         {
-            List<MyEntity> parts = new List<MyEntity>();
-            foreach (var block in AssemblyPartManager.I.AllAssemblyParts.Keys)
-                if (block.FatBlock != null)
-                    parts.Add((MyEntity)block.FatBlock);
+            List<IMyCubeBlock> parts = new List<IMyCubeBlock>();
+            foreach (var definitionBlockSet in AssemblyPartManager.I.AllAssemblyParts.Values)
+                foreach (var block in definitionBlockSet.Keys)
+                    if (block.FatBlock != null)
+                        parts.Add(block.FatBlock);
             return parts.ToArray();
         }
 
@@ -62,62 +63,65 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return AssemblyPartManager.I.AllPhysicalAssemblies.Keys.ToArray();
         }
 
-        private MyEntity[] GetMemberParts(int assemblyId)
+        private IMyCubeBlock[] GetMemberParts(int assemblyId)
         {
             PhysicalAssembly wep;
             if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
-                return Array.Empty<MyEntity>();
+                return Array.Empty<IMyCubeBlock>();
 
-            List<MyEntity> parts = new List<MyEntity>();
+            List<IMyCubeBlock> parts = new List<IMyCubeBlock>();
             foreach (var part in wep.ComponentParts)
                 if (part.Block.FatBlock != null)
-                    parts.Add((MyEntity)part.Block.FatBlock);
+                    parts.Add((IMyCubeBlock)part.Block.FatBlock);
 
             return parts.ToArray();
         }
 
-        private MyEntity[] GetConnectedBlocks(MyEntity blockEntity, bool useCached)
+        private IMyCubeBlock[] GetConnectedBlocks(IMyCubeBlock block, string definitionName, bool useCached)
         {
-            var block = blockEntity as IMyCubeBlock;
-            if (block == null)
-                return Array.Empty<MyEntity>();
+            ModularDefinition definition = DefinitionHandler.TryGetDefinition(definitionName);
+            if (block == null || definition == null)
+                return Array.Empty<IMyCubeBlock>();
 
             AssemblyPart wep;
-            if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(block.SlimBlock, out wep) || wep.ConnectedParts == null)
-                return Array.Empty<MyEntity>();
+            if (!AssemblyPartManager.I.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out wep) || wep.ConnectedParts == null)
+                return Array.Empty<IMyCubeBlock>();
 
-            List<MyEntity> parts = new List<MyEntity>();
+            List<IMyCubeBlock> parts = new List<IMyCubeBlock>();
             if (useCached)
             {
                 foreach (var part in wep.ConnectedParts)
                     if (part.Block.FatBlock != null)
-                        parts.Add((MyEntity)part.Block.FatBlock);
+                        parts.Add(part.Block.FatBlock);
             }
             else
             {
                 foreach (var part in wep.GetValidNeighbors(true))
                     if (part.FatBlock != null)
-                        parts.Add((MyEntity)part.FatBlock);
+                        parts.Add(part.FatBlock);
             }
 
             return parts.ToArray();
         }
 
-        private MyEntity GetBasePart(int assemblyId)
+        private IMyCubeBlock GetBasePart(int assemblyId)
         {
             PhysicalAssembly wep;
             if (!AssemblyPartManager.I.AllPhysicalAssemblies.TryGetValue(assemblyId, out wep))
                 return null;
 
-            return null;  //wep.basePart?.block?.FatBlock as MyEntity;
+            return null;  //wep.basePart?.block?.FatBlock as IMyCubeBlock;
         }
 
-        private int GetContainingAssembly(MyEntity blockEntity)
+        private int GetContainingAssembly(IMyCubeBlock block, string definitionName)
         {
-            IMySlimBlock block = blockEntity as IMySlimBlock;
-            foreach (var partKvp in AssemblyPartManager.I.AllAssemblyParts)
+            ModularDefinition definition = DefinitionHandler.TryGetDefinition(definitionName);
+            if (definition == null)
+                return -1;
+
+            foreach (var partKvp in AssemblyPartManager.I.AllAssemblyParts[definition])
             {
-                if (partKvp.Value != block)
+                if (partKvp.Key != block.SlimBlock)
                     continue;
                 return partKvp.Value.MemberAssembly.AssemblyId;
             }
