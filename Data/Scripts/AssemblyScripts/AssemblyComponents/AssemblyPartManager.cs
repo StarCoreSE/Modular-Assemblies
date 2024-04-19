@@ -31,7 +31,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         private HashSet<IMySlimBlock> QueuedBlockAdds = new HashSet<IMySlimBlock>();
         private HashSet<AssemblyPart> QueuedConnectionChecks = new HashSet<AssemblyPart>();
-        private Dictionary<AssemblyPart, PhysicalAssembly> QueuedAssemblyChecks = new Dictionary<AssemblyPart, PhysicalAssembly>();
 
         public Action<int> OnAssemblyClose;
 
@@ -39,11 +38,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public void QueueConnectionCheck(AssemblyPart part)
         {
             QueuedConnectionChecks.Add(part);
-        }
-        public void QueueAssemblyCheck(AssemblyPart part, PhysicalAssembly assembly)
-        {
-            if (!QueuedAssemblyChecks.ContainsKey(part))
-                QueuedAssemblyChecks.Add(part, assembly);
         }
 
         public void Init()
@@ -89,8 +83,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Queue partadds to account for world load/grid pasting
             ProcessQueuedConnectionChecks();
 
-            ProcessQueuedAssemblyChecks();
-
             foreach (var assembly in AllPhysicalAssemblies.Values)
             {
                 assembly.Update();
@@ -105,13 +97,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         private void ProcessQueuedBlockAdds()
         {
+            HashSet<IMySlimBlock> queuedBlocks;
             lock (QueuedBlockAdds)
             {
-                foreach (var queuedBlock in QueuedBlockAdds)
-                {
-                    OnBlockAdd(queuedBlock);
-                }
+                queuedBlocks = QueuedBlockAdds.ToHashSet();
                 QueuedBlockAdds.Clear();
+            }
+
+            foreach (var queuedBlock in queuedBlocks)
+            {
+                OnBlockAdd(queuedBlock);
             }
         }
 
@@ -128,21 +123,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             {
                 queuedPart.DoConnectionCheck();
             }
-        }
-
-        private void ProcessQueuedAssemblyChecks()
-        {
-            Dictionary<AssemblyPart, PhysicalAssembly> queuedAssemblies;
-            lock (QueuedAssemblyChecks)
-            {
-                queuedAssemblies = new Dictionary<AssemblyPart, PhysicalAssembly>(QueuedAssemblyChecks);
-                QueuedAssemblyChecks.Clear();
-            }
-
-            foreach (var queuedAssembly in queuedAssemblies)
-            {
-                queuedAssembly.Key.DoConnectionCheck();
-            }
+            MyAPIGateway.Utilities.ShowNotification("CCs: " + queuedParts.Count, 1000 / 60);
         }
 
         private void OnGridAdd(IMyEntity entity)

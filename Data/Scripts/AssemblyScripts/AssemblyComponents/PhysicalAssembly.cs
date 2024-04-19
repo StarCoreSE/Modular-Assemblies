@@ -53,7 +53,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             color = new Color(AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255));
 
             AddPart(basePart);
-            AssemblyPartManager.I.QueueAssemblyCheck(basePart, this);
         }
 
         public void AddPart(AssemblyPart part)
