@@ -123,7 +123,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             {
                 queuedPart.DoConnectionCheck();
             }
-            MyAPIGateway.Utilities.ShowNotification("CCs: " + queuedParts.Count, 1000 / 60);
         }
 
         private void OnGridAdd(IMyEntity entity)

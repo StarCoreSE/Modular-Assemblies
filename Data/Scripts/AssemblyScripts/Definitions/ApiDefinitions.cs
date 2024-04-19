@@ -28,6 +28,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["GetAssemblyGrid"] = new Func<int, IMyCubeGrid>(GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
                 ["AddOnAssemblyClose"] = new Action<Action<int>>(AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
                 ["RemoveOnAssemblyClose"] = new Action<Action<int>>(RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
+                ["RecreateAssembly"] = new Action<int>(RecreateAssembly),
                 // TODO: RecreateAssembly - Destroys assembly and makes all contained blocks queue for search.
                 // TODO: Replace stupid dumb definition actions with nice fancy API methods.
 
@@ -39,6 +40,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 // Definition methods
                 ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions),
                 ["UnregisterDefinition"] = new Func<string, bool>(DefinitionHandler.I.UnregisterDefinition),
+                ["GetAllDefinitions"] = new Func<string[]>(() => DefinitionHandler.I.ModularDefinitionsMap.Keys.ToArray()),
 
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
@@ -145,6 +147,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         private void RemoveOnAssemblyClose(Action<int> action)
         {
             AssemblyPartManager.I.OnAssemblyClose -= action;
+        }
+
+        private void RecreateAssembly(int assemblyId)
+        {
+
         }
     }
 }

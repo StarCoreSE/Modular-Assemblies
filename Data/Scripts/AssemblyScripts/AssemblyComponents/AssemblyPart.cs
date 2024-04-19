@@ -54,10 +54,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             IsBaseBlock = AssemblyDefinition.BaseBlockSubtype == Block.BlockDefinition.Id.SubtypeName;
 
-            if (AssemblyPartManager.I.AllAssemblyParts.ContainsKey(block))
+            if (AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].ContainsKey(block))
                 return;
 
-            AssemblyPartManager.I.AllAssemblyParts.Add(block, this);
+            AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].Add(block, this);
 
             AssemblyPartManager.I.QueueConnectionCheck(this);
         }
@@ -169,7 +169,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 neighbors.RemoveAll(nBlock =>
                 {
                     AssemblyPart part;
-                    if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(nBlock, out part))
+                    if (!AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out part))
                         return true;
                     return part.MemberAssembly != this.MemberAssembly;
                 });
@@ -187,7 +187,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             foreach (var nBlock in GetValidNeighbors())
             {
                 AssemblyPart nBlockPart;
-                if (!AssemblyPartManager.I.AllAssemblyParts.TryGetValue(nBlock, out nBlockPart))
+                if (!AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out nBlockPart))
                     continue;
 
                 if (!MustShareAssembly || nBlockPart.MemberAssembly == MemberAssembly)

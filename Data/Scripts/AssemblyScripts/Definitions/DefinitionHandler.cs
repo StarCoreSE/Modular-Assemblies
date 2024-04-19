@@ -10,6 +10,7 @@ using VRage.Profiler;
 using VRage.Utils;
 using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
 using VRage.Game;
+using VRage.Game.ModAPI;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
@@ -91,6 +92,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                         continue;
 
                     ModularDefinitionsMap.Add(modDef.Name, modDef);
+                    AssemblyPartManager.I.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, AssemblyPart>());
                     newValidDefinitions.Add(modDef.Name);
                 }
 
@@ -104,72 +106,28 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         /// <summary>
         /// Removes a definition and destroys all assemblies referencing it.
         /// </summary>
-        /// <param name="definition"></param>
+        /// <param name="definitionName"></param>
         /// <returns></returns>
-        public bool UnregisterDefinition(string definition)
+        public bool UnregisterDefinition(string definitionName)
         {
-            if (!ModularDefinitionsMap.ContainsKey(definition))
+            if (!ModularDefinitionsMap.ContainsKey(definitionName))
                 return false;
 
             foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values)
             {
-                if (assembly.AssemblyDefinition.Name != definition)
+                if (assembly.AssemblyDefinition.Name != definitionName)
                     continue;
 
-                // TODO: Deregister parts. AssemblyPartManager.AllAssemblyParts as a Dictionary<Definition, Dictionary<IMySlimBlock, AssemblyPart>>?
-                //foreach (var part in assembly.ComponentParts)
-                //    AssemblyPartManager.I.AllAssemblyParts.Remove(part);
                 assembly.Close();
             }
 
-            ModularDefinitionsMap.Remove(definition);
+            AssemblyPartManager.I.AllAssemblyParts.Remove(ModularDefinitionsMap[definitionName]);
+            ModularDefinitionsMap.Remove(definitionName);
             return true;
         }
 
         public static ModularDefinition TryGetDefinition(string definitionName) => I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
-        public void ActionMessageHandler(object o)
-        {
-            try
-            {
-                var message = o as byte[];
-                if (message == null) return;
-
-                FunctionCall functionCall = null;
-                try
-                {
-                    functionCall = MyAPIGateway.Utilities.SerializeFromBinary<FunctionCall>(message);
-                }
-                catch { }
-
-                if (functionCall != null)
-                {
-                    //ModularLog.Log($"ModularAssemblies: Recieved action of type {functionCall.ActionId}.");
-
-                    PhysicalAssembly wep = AssemblyPartManager.I.AllPhysicalAssemblies[functionCall.PhysicalAssemblyId];
-                    if (wep == null)
-                    {
-                        ModularLog.Log($"Invalid PhysicalAssembly!");
-                        return;
-                    }
-
-                    // TODO: Remove
-                    //object[] Values = functionCall.Values.Values();
-
-                    switch (functionCall.ActionId)
-                    {
-                        default:
-                            // Fill in here if necessary.
-                            break;
-                    }
-                }
-                else
-                {
-                    ModularLog.Log($"functionCall null!");
-                }
-            }
-            catch (Exception ex) { ModularLog.Log($"Exception in ActionMessageHandler: {ex}"); }
-        }
 
         public void SendOnPartAdd(string DefinitionName, int PhysicalAssemblyId, long BlockEntityId, bool IsBaseBlock)
         {
