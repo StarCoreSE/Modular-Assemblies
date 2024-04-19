@@ -42,6 +42,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             MyAPIGateway.Session.OnSessionReady -= CheckValidDefinitions;
         }
 
+        /// <summary>
+        /// Registers a serialized definition.
+        /// </summary>
+        /// <param name="serialized"></param>
+        /// <returns></returns>
         public string[] RegisterDefinitions(byte[] serialized)
         {
             if (serialized == null)
@@ -60,6 +65,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return Array.Empty<string>();
         }
 
+        /// <summary>
+        /// Registers a deserialized definition.
+        /// </summary>
+        /// <param name="definitionSet"></param>
+        /// <returns></returns>
         public string[] RegisterDefinitions(DefinitionContainer definitionSet)
         {
             try
@@ -94,6 +104,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     ModularDefinitionsMap.Add(modDef.Name, modDef);
                     AssemblyPartManager.I.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, AssemblyPart>());
                     newValidDefinitions.Add(modDef.Name);
+
+                    if (AssembliesSessionInit.IsSessionInited)
+                        AssemblyPartManager.I.RegisterExistingBlocks(modDef); // We only want to do this if blocks already exist in the world.
                 }
 
                 return newValidDefinitions.ToArray();

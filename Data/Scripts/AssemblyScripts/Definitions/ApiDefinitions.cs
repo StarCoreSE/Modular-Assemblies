@@ -16,7 +16,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         internal ApiDefinitions()
         {
-            ModApiMethods = new Dictionary<string, Delegate>()
+            ModApiMethods = new Dictionary<string, Delegate>
             {
                 // Global assembly methods
                 ["GetAllParts"] = new Func<IMyCubeBlock[]>(GetAllParts), // Returns a IMyCubeBlock array of all CubeBlocks with Assembly parts.

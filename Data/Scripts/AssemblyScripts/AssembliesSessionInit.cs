@@ -20,12 +20,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         DefinitionHandler DefinitionHandler = new DefinitionHandler();
         public static bool DebugMode = false;
         public Random Random = new Random();
+        public static bool IsSessionInited = false;
 
         #region Base Methods
 
         public override void LoadData()
         {
             Stopwatch watch = Stopwatch.StartNew();
+            IsSessionInited = false;
 
             I = this;
             ModularLog.Init();
@@ -43,6 +45,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             try
             {
+                IsSessionInited = true;
                 AssemblyPartManager.UpdateAfterSimulation();
             }
             catch (Exception e)

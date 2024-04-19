@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.Debug;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
@@ -71,11 +72,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             MyAPIGateway.Entities.OnEntityRemove -= OnGridRemove;
         }
 
-
-
-        
-
-        
         public void UpdateAfterSimulation()
         {
             // Queue gridadds to account for world load/grid pasting
@@ -214,6 +210,32 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     AllAssemblyParts[part.AssemblyDefinition].Remove(block);
                 }
             }
+        }
+
+        /// <summary>
+        /// Assigns all valid existing blocks an assembly part. Very slow operation, use sparingly.
+        /// </summary>
+        /// <param name="definition"></param>
+        public void RegisterExistingBlocks(ModularDefinition definition)
+        {
+            if (definition == null)
+                return;
+
+            // Iterate through all entities and pick out grids
+            HashSet<IMyEntity> allEntities = new HashSet<IMyEntity>();
+            MyAPIGateway.Entities.GetEntities(allEntities, entity => entity is IMyCubeGrid);
+
+            // Parallel iterate through all grids and check all blocks for definition
+            MyAPIGateway.Parallel.ForEach(allEntities, entity =>
+            {
+                foreach (var block in ((IMyCubeGrid)entity).GetFatBlocks<IMyCubeBlock>())
+                {
+                    if (definition.AllowedBlocks.Contains(block.BlockDefinition.SubtypeId))
+                    {
+                        AssemblyPart w = new AssemblyPart(block.SlimBlock, definition);
+                    }
+                }
+            });
         }
     }
 }
