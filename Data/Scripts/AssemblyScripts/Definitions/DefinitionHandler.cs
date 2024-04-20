@@ -11,6 +11,7 @@ using VRage.Utils;
 using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Game.Entity;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
@@ -26,6 +27,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public Dictionary<string, ModularDefinition> ModularDefinitionsMap = new Dictionary<string, ModularDefinition>();
         public ICollection<ModularDefinition> ModularDefinitions => ModularDefinitionsMap.Values;
+
+        /// <summary>
+        /// An array of all valid block subtypes, generated at session init. 
+        /// </summary>
+        internal string[] ValidBlockSubtypes = Array.Empty<string>();
 
         public void Init()
         {
@@ -108,7 +114,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     newValidDefinitions.Add(modDef.Name);
 
                     if (AssembliesSessionInit.IsSessionInited)
+                    {
+                        CheckDefinitionValid(modDef);
                         AssemblyPartManager.I.RegisterExistingBlocks(modDef); // We only want to do this if blocks already exist in the world.
+                    }
                 }
 
                 return newValidDefinitions.ToArray();
@@ -143,62 +152,34 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public static ModularDefinition TryGetDefinition(string definitionName) => I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
-
-        public void SendOnPartAdd(string DefinitionName, int PhysicalAssemblyId, long BlockEntityId, bool IsBaseBlock)
+        public void RegisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            SerializedObjectArray Values = new SerializedObjectArray
-            (
-                BlockEntityId,
-                IsBaseBlock
-            );
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
-            SendFunc(new FunctionCall()
-            {
-                ActionId = FunctionCall.ActionType.OnPartAdd,
-                DefinitionName = DefinitionName,
-                PhysicalAssemblyId = PhysicalAssemblyId,
-                Values = Values,
-            });
+            if (definition == null)
+                return;
+
+            definition.OnPartAdd += action;
         }
 
-        public void SendOnPartRemove(string DefinitionName, int PhysicalAssemblyId, long BlockEntityId, bool IsBaseBlock)
+        public void RegisterOnPartRemove(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            SerializedObjectArray Values = new SerializedObjectArray
-            (
-                BlockEntityId,
-                IsBaseBlock
-            );
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
-            SendFunc(new FunctionCall()
-            {
-                ActionId = FunctionCall.ActionType.OnPartRemove,
-                DefinitionName = DefinitionName,
-                PhysicalAssemblyId = PhysicalAssemblyId,
-                Values = Values,
-            });
+            if (definition == null)
+                return;
+
+            definition.OnPartRemove += action;
         }
 
-        public void SendOnPartDestroy(string DefinitionName, int PhysicalAssemblyId, long BlockEntityId, bool IsBaseBlock)
+        public void RegisterOnPartDestroy(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            SerializedObjectArray Values = new SerializedObjectArray
-            (
-                BlockEntityId,
-                IsBaseBlock
-            );
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
-            SendFunc(new FunctionCall
-            {
-                ActionId = FunctionCall.ActionType.OnPartDestroy,
-                DefinitionName = DefinitionName,
-                PhysicalAssemblyId = PhysicalAssemblyId,
-                Values = Values,
-            });
-        }
+            if (definition == null)
+                return;
 
-        private void SendFunc(FunctionCall call)
-        {
-            MyAPIGateway.Utilities.SendModMessage(OutboundMessageId, MyAPIGateway.Utilities.SerializeToBinary(call));
-            //ModularLog.Log($"ModularAssemblies: Sending function call [id {call.ActionId}] to [{call.DefinitionName}].");
+            definition.OnPartDestroy += action;
         }
 
         private void CheckValidDefinitions()
@@ -215,19 +196,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     validSubtypes.Add(def.Id.SubtypeName);
                 }
             }
+
+            ValidBlockSubtypes = validSubtypes.ToArray();
+
             foreach (var def in ModularDefinitions.ToList())
-                CheckDefinitionValid(def, validSubtypes);
+                CheckDefinitionValid(def);
         }
 
-        private void CheckDefinitionValid(ModularDefinition modDef, List<string> validSubtypes)
+        private void CheckDefinitionValid(ModularDefinition modDef)
         {
             foreach (var subtypeId in modDef.AllowedBlocks)
             {
-                if (!validSubtypes.Contains(subtypeId))
-                {
-                    ModularLog.Log($"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
-                    MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
-                }
+                if (ValidBlockSubtypes.Contains(subtypeId))
+                    continue;
+                ModularLog.Log($"Invalid SubtypeId \"{subtypeId}\" in definition {modDef.Name}! Unexpected behavior may occur.");
+                MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
             }
         }
     }

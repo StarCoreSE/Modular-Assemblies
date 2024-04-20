@@ -7,6 +7,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
+using VRageMath;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
@@ -39,6 +40,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["RegisterDefinitions"] = new Func<byte[], string[]>(DefinitionHandler.I.RegisterDefinitions), // Tries to register a new definition.
                 ["UnregisterDefinition"] = new Func<string, bool>(DefinitionHandler.I.UnregisterDefinition), // Tries to de-register a definition.
                 ["GetAllDefinitions"] = new Func<string[]>(() => DefinitionHandler.I.ModularDefinitionsMap.Keys.ToArray()), // Returns a list of all definition names.
+                ["RegisterOnPartAdd"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartAdd),
+                ["RegisterOnPartRemove"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartRemove),
+                ["RegisterOnPartDestroy"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartDestroy),
 
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.

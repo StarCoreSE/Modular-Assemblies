@@ -144,15 +144,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void PartRemoved(bool notifyMods = true)
         {
+            int assemblyId = MemberAssembly?.AssemblyId ?? -1;
             MemberAssembly?.RemovePart(this);
             foreach (var neighbor in ConnectedParts)
                 neighbor.ConnectedParts.Remove(this);
 
             if (notifyMods)
             {
-                DefinitionHandler.I.SendOnPartRemove(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+                AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
                 if (Block.Integrity <= 0)
-                    DefinitionHandler.I.SendOnPartDestroy(AssemblyDefinition.Name, MemberAssembly?.AssemblyId ?? -1, Block.FatBlock.EntityId, IsBaseBlock);
+                    AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
             }
         }
 

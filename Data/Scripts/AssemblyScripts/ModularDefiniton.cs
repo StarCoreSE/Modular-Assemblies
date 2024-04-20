@@ -21,6 +21,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public string BaseBlockSubtype = null;
         public string Name = null;
 
+        public Action<int, IMyCubeBlock, bool> OnPartAdd;
+        public Action<int, IMyCubeBlock, bool> OnPartRemove;
+        public Action<int, IMyCubeBlock, bool> OnPartDestroy;
+
 
         public static ModularDefinition Load(PhysicalDefinition definition)
         {

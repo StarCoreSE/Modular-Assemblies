@@ -16,7 +16,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
     internal class ApiHandler
     {
         private const long Channel = 8774;
-        public static readonly Vector2I ModVersion = new Vector2I(0, 1); // Mod version, API version
         private readonly IReadOnlyDictionary<string, Delegate> _apiDefinitions;
         private readonly MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>> _endpointTuple;
 
@@ -42,7 +41,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         public ApiHandler()
         {
             _apiDefinitions = new ApiDefinitions().ModApiMethods;
-            _endpointTuple = new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(ModVersion, _apiDefinitions);
+            _endpointTuple = new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(AssembliesSessionInit.ModVersion, _apiDefinitions);
 
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
 
@@ -55,7 +54,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 ModularLog.Log($"Exception in Api Load: {ex}"); 
             }
-            ModularLog.Log($"ModularDefinitionsAPI v{ModVersion.Y} initialized.");
+            ModularLog.Log($"ModularDefinitionsAPI v{AssembliesSessionInit.ModVersion.Y} initialized.");
         }
 
 
@@ -68,7 +67,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
             IsReady = false;
             // Clear API client's endpoints
-            MyAPIGateway.Utilities.SendModMessage(Channel, new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(ModVersion, null));
+            MyAPIGateway.Utilities.SendModMessage(Channel, new MyTuple<Vector2I, IReadOnlyDictionary<string, Delegate>>(AssembliesSessionInit.ModVersion, null));
 
             ModularLog.Log("ModularDefinitionsAPI unloaded.");
         }

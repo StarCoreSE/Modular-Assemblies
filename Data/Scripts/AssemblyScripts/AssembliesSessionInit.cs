@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
 using VRage.Game.Components;
 using VRage.Utils;
+using VRageMath;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class AssembliesSessionInit : MySessionComponentBase
     {
+        public static readonly Vector2I ModVersion = new Vector2I(1, 1); // Mod version, API version
+
         public static AssembliesSessionInit I;
         AssemblyPartManager AssemblyPartManager = new AssemblyPartManager();
         DefinitionHandler DefinitionHandler = new DefinitionHandler();

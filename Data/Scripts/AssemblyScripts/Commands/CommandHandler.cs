@@ -56,7 +56,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             Close(); // Close existing command handlers.
             I = new CommandHandler();
             MyAPIGateway.Utilities.MessageEnteredSender += I.Command_MessageEnteredSender;
-            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{ApiHandler.ModVersion.X}", "Chat commands registered - run \"!md help\" for help.");
+            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{AssembliesSessionInit.ModVersion.X}", "Chat commands registered - run \"!md help\" for help.");
         }
 
         public static void Close()

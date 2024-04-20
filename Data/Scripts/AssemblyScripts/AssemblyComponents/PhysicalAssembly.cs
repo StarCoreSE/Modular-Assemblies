@@ -63,7 +63,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             ComponentParts.Add(part);
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
-                DefinitionHandler.I.SendOnPartAdd(AssemblyDefinition.Name, AssemblyId, part.Block.FatBlock.EntityId, /*part == basePart*/ ComponentParts.Count == 1);
+                part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
             part.PrevAssemblyId = AssemblyId;
         }
 
