@@ -27,10 +27,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         public Action OnReady;
 
         /// <summary>
-        ///     Call this to initialize the Modular API.
+        ///     Call this to initialize the Modular API.<br/>
+        ///     <remarks>
+        ///         API methods will be unusable until the endpoints are populated. Check <see cref="IsReady"/> or utilize <see cref="OnReady"/> for safety.
+        ///     </remarks>
         /// </summary>
         /// <param name="modContext"></param>
-        /// <param name="onLoad"></param>
+        /// <param name="onLoad">Method to be triggered when the API is ready.</param>
         /// <exception cref="Exception"></exception>
         public ModularDefinitionApi(IMyModContext modContext, Action onLoad = null)
         {
@@ -47,18 +50,24 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         }
 
         /// <summary>
-        ///     The currently loaded Modular Assemblies Framework version. Don't touch this either.
+        ///     The currently loaded Modular Assemblies Framework version.
+        ///     <remarks>
+        ///         Not the API version; see <see cref="ApiVersion"/>
+        ///     </remarks>
         /// </summary>
         public int FrameworkVersion { get; private set; } = -1;
 
         /// <summary>
-        ///     Displays whether the API is ready.
+        ///     Displays whether endpoints are loaded and the API is ready for use.
         /// </summary>
         public bool IsReady { get; private set; }
 
         /// <summary>
-        ///     Call this to unload the Modular API. It will be called automatically when the Modular Assemblies Framework is
-        ///     closed.
+        ///     Call this to unload the Modular API; i.e. in case of instantiating a new API or for freeing up resources.
+        ///     <remarks>
+        ///         This method will also be called automatically when the Modular Assemblies Framework is
+        ///         closed.
+        ///     </remarks>
         /// </summary>
         public void UnloadData()
         {
