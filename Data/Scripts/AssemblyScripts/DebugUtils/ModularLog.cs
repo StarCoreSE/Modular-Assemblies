@@ -1,21 +1,27 @@
-﻿using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
+using Sandbox.ModAPI;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
 {
     /// <summary>
-    /// Standard logging class. Outputs to %AppData%\Roaming\Space Engineers\Storage\
+    ///     Standard logging class. Outputs to %AppData%\Roaming\Space Engineers\Storage\
     /// </summary>
     public class ModularLog
     {
-        private readonly TextWriter _writer;
         private static ModularLog I;
+        private readonly TextWriter _writer;
+
+        private ModularLog()
+        {
+            MyAPIGateway.Utilities.DeleteFileInGlobalStorage("ModularAssemblies.log");
+            _writer = MyAPIGateway.Utilities
+                .WriteFileInGlobalStorage(
+                    "ModularAssemblies.log"); // Only creating one debug.log to avoid clutter. Might change in the future.
+            _writer.WriteLine(
+                $"     Modular Assemblies v{AssembliesSessionInit.ModVersion.X} - Debug Log\n===========================================\n");
+            _writer.Flush();
+        }
 
         public static void Log(string message)
         {
@@ -33,14 +39,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
             I = new ModularLog();
         }
 
-        private ModularLog()
-        {
-            MyAPIGateway.Utilities.DeleteFileInGlobalStorage("ModularAssemblies.log");
-            _writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("ModularAssemblies.log"); // Only creating one debug.log to avoid clutter. Might change in the future.
-            _writer.WriteLine($"     Modular Assemblies v{AssembliesSessionInit.ModVersion.X} - Debug Log\n===========================================\n");
-            _writer.Flush();
-        }
-
         public static void Close()
         {
             if (I != null)
@@ -48,6 +46,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
                 Log("Closing log writer.");
                 I._writer.Close();
             }
+
             I = null;
         }
 

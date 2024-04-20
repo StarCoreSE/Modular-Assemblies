@@ -1,14 +1,13 @@
-﻿using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
+using Sandbox.ModAPI;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     /// <summary>
-    /// Parses commands from chat and triggers relevant methods.
+    ///     Parses commands from chat and triggers relevant methods.
     /// </summary>
     public class CommandHandler
     {
@@ -23,13 +22,17 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             ["debug"] = new Command(
                 "Modular Assemblies",
                 "Toggles debug draw.",
-                message => AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode),
+                message => AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode)
         };
+
+        private CommandHandler()
+        {
+        }
 
         private void ShowHelp()
         {
-            StringBuilder helpBuilder = new StringBuilder();
-            List<string> modNames = new List<string>();
+            var helpBuilder = new StringBuilder();
+            var modNames = new List<string>();
             foreach (var command in _commands.Values)
                 if (!modNames.Contains(command.modName))
                     modNames.Add(command.modName);
@@ -47,16 +50,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             }
         }
 
-        private CommandHandler()
-        {
-        }
-
         public static void Init()
         {
             Close(); // Close existing command handlers.
             I = new CommandHandler();
             MyAPIGateway.Utilities.MessageEnteredSender += I.Command_MessageEnteredSender;
-            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{AssembliesSessionInit.ModVersion.X}", "Chat commands registered - run \"!md help\" for help.");
+            MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{AssembliesSessionInit.ModVersion.X}",
+                "Chat commands registered - run \"!md help\" for help.");
         }
 
         public static void Close()
@@ -66,6 +66,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 MyAPIGateway.Utilities.MessageEnteredSender -= I.Command_MessageEnteredSender;
                 I._commands.Clear();
             }
+
             I = null;
         }
 
@@ -79,7 +80,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
                 sendToOthers = false;
 
-                string[] parts = messageText.Substring(4).Trim(' ').Split(' '); // Convert commands to be more parseable
+                var parts = messageText.Substring(4).Trim(' ').Split(' '); // Convert commands to be more parseable
 
                 if (parts[0] == "")
                 {
@@ -91,7 +92,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 if (_commands.ContainsKey(parts[0].ToLower()))
                     _commands[parts[0].ToLower()].action.Invoke(parts);
                 else
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Unrecognized command \"{parts[0].ToLower()}\"");
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                        $"Unrecognized command \"{parts[0].ToLower()}\"");
             }
             catch (Exception ex)
             {
@@ -100,19 +102,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         }
 
         /// <summary>
-        /// Registers a command for Modular Assemblies' command handler.
+        ///     Registers a command for Modular Assemblies' command handler.
         /// </summary>
         /// <param name="command"></param>
         /// <param name="action"></param>
         /// <param name="modName"></param>
-        public static void AddCommand(string command, string helpText, Action<string[]> action, string modName = "Modular Assemblies")
+        public static void AddCommand(string command, string helpText, Action<string[]> action,
+            string modName = "Modular Assemblies")
         {
             if (I == null)
                 return;
 
             if (I._commands.ContainsKey(command))
             {
-                SoftHandle.RaiseException("Attempted to add duplicate command " + command + " from [" + modName + "]", callingType: typeof(CommandHandler));
+                SoftHandle.RaiseException("Attempted to add duplicate command " + command + " from [" + modName + "]",
+                    callingType: typeof(CommandHandler));
                 return;
             }
 
@@ -121,7 +125,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         }
 
         /// <summary>
-        /// Removes a command from Modular Assemblies' command handler.
+        ///     Removes a command from Modular Assemblies' command handler.
         /// </summary>
         /// <param name="command"></param>
         public static void RemoveCommand(string command)
@@ -134,9 +138,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         private class Command
         {
-            public string modName;
-            public string helpText;
-            public Action<string[]> action;
+            public readonly Action<string[]> action;
+            public readonly string helpText;
+            public readonly string modName;
 
             public Command(string modName, string helpText, Action<string[]> action)
             {

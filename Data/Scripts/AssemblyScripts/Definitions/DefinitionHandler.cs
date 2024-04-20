@@ -1,37 +1,33 @@
-﻿using Sandbox.Definitions;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
-using VRage;
-using VRage.Game.Components;
-using VRage.Profiler;
-using VRage.Utils;
-using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
-using VRage.Game;
+using Sandbox.Definitions;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using VRage.Game.Entity;
+using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 {
     /// <summary>
-    /// Handles all communication about definitions.
+    ///     Handles all communication about definitions.
     /// </summary>
     internal class DefinitionHandler
     {
+        private const int OutboundMessageId = 8771;
         public static DefinitionHandler I;
-        const int OutboundMessageId = 8771;
 
         internal ApiHandler ApiHandler;
 
-        public Dictionary<string, ModularDefinition> ModularDefinitionsMap = new Dictionary<string, ModularDefinition>();
-        public ICollection<ModularDefinition> ModularDefinitions => ModularDefinitionsMap.Values;
+        public Dictionary<string, ModularDefinition>
+            ModularDefinitionsMap = new Dictionary<string, ModularDefinition>();
 
         /// <summary>
-        /// An array of all valid block subtypes, generated at session init. 
+        ///     An array of all valid block subtypes, generated at session init.
         /// </summary>
         internal string[] ValidBlockSubtypes = Array.Empty<string>();
+
+        public ICollection<ModularDefinition> ModularDefinitions => ModularDefinitionsMap.Values;
 
         public void Init()
         {
@@ -51,7 +47,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         }
 
         /// <summary>
-        /// Registers a serialized definition.
+        ///     Registers a serialized definition.
         /// </summary>
         /// <param name="serialized"></param>
         /// <returns></returns>
@@ -62,7 +58,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
             try
             {
-                DefinitionContainer definitionSet = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(serialized);
+                var definitionSet = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(serialized);
                 return RegisterDefinitions(definitionSet);
             }
             catch (Exception ex)
@@ -74,7 +70,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         }
 
         /// <summary>
-        /// Registers a deserialized definition.
+        ///     Registers a deserialized definition.
         /// </summary>
         /// <param name="definitionSet"></param>
         /// <returns></returns>
@@ -84,12 +80,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 if (definitionSet == null)
                 {
-                    ModularLog.Log($"Invalid definition container!");
+                    ModularLog.Log("Invalid definition container!");
                     return Array.Empty<string>();
                 }
 
                 ModularLog.Log($"Received {definitionSet.PhysicalDefs.Length} definitions.");
-                List<string> newValidDefinitions = new List<string>();
+                var newValidDefinitions = new List<string>();
 
                 foreach (var def in definitionSet.PhysicalDefs)
                 {
@@ -97,12 +93,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     if (modDef == null)
                         continue;
 
-                    bool isDefinitionValid = true;
+                    var isDefinitionValid = true;
                     // Check for duplicates
                     if (ModularDefinitionsMap.ContainsKey(modDef.Name))
                     {
                         ModularLog.Log($"Duplicate DefinitionName for definition {modDef.Name}! Skipping load...");
-                        MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
+                        MyAPIGateway.Utilities.ShowMessage("ModularAssemblies",
+                            $"Duplicate DefinitionName in definition {modDef.Name}! Skipping load...");
                         isDefinitionValid = false;
                     }
 
@@ -116,19 +113,24 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     if (AssembliesSessionInit.IsSessionInited)
                     {
                         CheckDefinitionValid(modDef);
-                        AssemblyPartManager.I.RegisterExistingBlocks(modDef); // We only want to do this if blocks already exist in the world.
+                        AssemblyPartManager.I
+                            .RegisterExistingBlocks(
+                                modDef); // We only want to do this if blocks already exist in the world.
                     }
                 }
 
                 return newValidDefinitions.ToArray();
             }
-            catch (Exception ex) { ModularLog.Log($"Exception in DefinitionHandler.RegisterDefinitions: {ex}"); }
+            catch (Exception ex)
+            {
+                ModularLog.Log($"Exception in DefinitionHandler.RegisterDefinitions: {ex}");
+            }
 
             return Array.Empty<string>();
         }
 
         /// <summary>
-        /// Removes a definition and destroys all assemblies referencing it.
+        ///     Removes a definition and destroys all assemblies referencing it.
         /// </summary>
         /// <param name="definitionName"></param>
         /// <returns></returns>
@@ -150,11 +152,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             return true;
         }
 
-        public static ModularDefinition TryGetDefinition(string definitionName) => I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+        public static ModularDefinition TryGetDefinition(string definitionName)
+        {
+            return I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+        }
 
         public void RegisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null)
                 return;
@@ -164,7 +169,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public void RegisterOnPartRemove(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null)
                 return;
@@ -174,7 +179,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public void RegisterOnPartDestroy(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null)
                 return;
@@ -184,7 +189,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public void UnregisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null || action == null)
                 return;
@@ -194,7 +199,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public void UnregisterOnPartRemove(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null || action == null)
                 return;
@@ -204,7 +209,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         public void UnregisterOnPartDestroy(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
-            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
 
             if (definition == null || action == null)
                 return;
@@ -216,15 +221,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         {
             // Get all block definition subtypes
             var defs = MyDefinitionManager.Static.GetAllDefinitions();
-            List<string> validSubtypes = new List<string>();
+            var validSubtypes = new List<string>();
             foreach (var def in defs)
             {
                 var blockDef = def as MyCubeBlockDefinition;
 
-                if (blockDef != null)
-                {
-                    validSubtypes.Add(def.Id.SubtypeName);
-                }
+                if (blockDef != null) validSubtypes.Add(def.Id.SubtypeName);
             }
 
             ValidBlockSubtypes = validSubtypes.ToArray();
@@ -239,8 +241,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             {
                 if (ValidBlockSubtypes.Contains(subtypeId))
                     continue;
-                ModularLog.Log($"Invalid SubtypeId \"{subtypeId}\" in definition {modDef.Name}! Unexpected behavior may occur.");
-                MyAPIGateway.Utilities.ShowMessage("ModularAssemblies", $"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
+                ModularLog.Log(
+                    $"Invalid SubtypeId \"{subtypeId}\" in definition {modDef.Name}! Unexpected behavior may occur.");
+                MyAPIGateway.Utilities.ShowMessage("ModularAssemblies",
+                    $"Invalid SubtypeId [{subtypeId}] in definition {modDef.Name}! Unexpected behavior may occur.");
             }
         }
     }

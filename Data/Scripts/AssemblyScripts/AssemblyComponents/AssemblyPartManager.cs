@@ -1,41 +1,44 @@
-﻿using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
-using VRage.Game.Components;
-using VRage.Game.Entity;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using VRage.Utils;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     /// <summary>
-    /// Creates and manages all AssemblyParts and PhysicalAssemblies.
+    ///     Creates and manages all AssemblyParts and PhysicalAssemblies.
     /// </summary>
     public class AssemblyPartManager
     {
         public static AssemblyPartManager I;
 
         /// <summary>
-        /// Every single AssemblyPart in the world, mapped to definitions.
+        ///     Every single AssemblyPart in the world, mapped to definitions.
         /// </summary>
-        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts = new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
+        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts =
+            new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
 
         /// <summary>
-        /// Every single PhysicalAssembly in the world.
+        ///     Every single PhysicalAssembly in the world.
         /// </summary>
         public Dictionary<int, PhysicalAssembly> AllPhysicalAssemblies = new Dictionary<int, PhysicalAssembly>();
-        public int CreatedPhysicalAssemblies = 0;
 
-        private HashSet<IMySlimBlock> QueuedBlockAdds = new HashSet<IMySlimBlock>();
-        private HashSet<AssemblyPart> QueuedConnectionChecks = new HashSet<AssemblyPart>();
+        public int CreatedPhysicalAssemblies = 0;
 
         public Action<int> OnAssemblyClose;
 
-        public void QueueBlockAdd(IMySlimBlock block) => QueuedBlockAdds.Add(block);
+        private readonly HashSet<IMySlimBlock> QueuedBlockAdds = new HashSet<IMySlimBlock>();
+        private readonly HashSet<AssemblyPart> QueuedConnectionChecks = new HashSet<AssemblyPart>();
+
+        public void QueueBlockAdd(IMySlimBlock block)
+        {
+            QueuedBlockAdds.Add(block);
+        }
+
         public void QueueConnectionCheck(AssemblyPart part)
         {
             QueuedConnectionChecks.Add(part);
@@ -79,18 +82,17 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Queue partadds to account for world load/grid pasting
             ProcessQueuedConnectionChecks();
 
-            foreach (var assembly in AllPhysicalAssemblies.Values)
-            {
-                assembly.Update();
-            }
+            foreach (var assembly in AllPhysicalAssemblies.Values) assembly.Update();
 
             if (AssembliesSessionInit.DebugMode)
             {
-                int partCount = 0;
+                var partCount = 0;
                 foreach (var definition in AllAssemblyParts)
                     partCount += definition.Value.Count;
-                MyAPIGateway.Utilities.ShowNotification($"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {partCount}", 1000 / 60);
-                MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}", 1000 / 60);
+                MyAPIGateway.Utilities.ShowNotification(
+                    $"Assemblies: {AllPhysicalAssemblies.Count} | Parts: {partCount}", 1000 / 60);
+                MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}",
+                    1000 / 60);
             }
         }
 
@@ -103,10 +105,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 QueuedBlockAdds.Clear();
             }
 
-            foreach (var queuedBlock in queuedBlocks)
-            {
-                OnBlockAdd(queuedBlock);
-            }
+            foreach (var queuedBlock in queuedBlocks) OnBlockAdd(queuedBlock);
         }
 
         private void ProcessQueuedConnectionChecks()
@@ -118,10 +117,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 QueuedConnectionChecks.Clear();
             }
 
-            foreach (var queuedPart in queuedParts)
-            {
-                queuedPart.DoConnectionCheck();
-            }
+            foreach (var queuedPart in queuedParts) queuedPart.DoConnectionCheck();
         }
 
         private void OnGridAdd(IMyEntity entity)
@@ -129,7 +125,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (!(entity is IMyCubeGrid))
                 return;
 
-            IMyCubeGrid grid = (IMyCubeGrid) entity;
+            var grid = (IMyCubeGrid)entity;
 
             // Exclude projected and held grids
             if (grid.Physics == null)
@@ -138,7 +134,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             grid.OnBlockAdded += OnBlockAdd;
             grid.OnBlockRemoved += OnBlockRemove;
 
-            List<IMySlimBlock> existingBlocks = new List<IMySlimBlock>();
+            var existingBlocks = new List<IMySlimBlock>();
             grid.GetBlocks(existingBlocks);
             foreach (var block in existingBlocks)
                 QueuedBlockAdds.Add(block);
@@ -155,7 +151,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     if (!modularDefinition.IsBlockAllowed(block))
                         return;
 
-                    AssemblyPart w = new AssemblyPart(block, modularDefinition);
+                    var w = new AssemblyPart(block, modularDefinition);
                     // No further init work is needed.
                     // Not returning because a part can have multiple assemblies.
                 }
@@ -171,7 +167,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (!(entity is IMyCubeGrid))
                 return;
 
-            IMyCubeGrid grid = (IMyCubeGrid)entity;
+            var grid = (IMyCubeGrid)entity;
 
             // Exclude projected and held grids
             if (grid.Physics == null)
@@ -180,20 +176,17 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             grid.OnBlockAdded -= OnBlockAdd;
             grid.OnBlockRemoved -= OnBlockRemove;
 
-            List<AssemblyPart> toRemove = new List<AssemblyPart>();
-            HashSet<PhysicalAssembly> toRemoveAssemblies = new HashSet<PhysicalAssembly>();
+            var toRemove = new List<AssemblyPart>();
+            var toRemoveAssemblies = new HashSet<PhysicalAssembly>();
             foreach (var definitionPartSet in AllAssemblyParts.Values)
-            {
-                foreach (var partKvp in definitionPartSet)
+            foreach (var partKvp in definitionPartSet)
+                if (partKvp.Key.CubeGrid == grid)
                 {
-                    if (partKvp.Key.CubeGrid == grid)
-                    {
-                        toRemove.Add(partKvp.Value);
-                        if (partKvp.Value.MemberAssembly != null)
-                            toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
-                    }
+                    toRemove.Add(partKvp.Value);
+                    if (partKvp.Value.MemberAssembly != null)
+                        toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
                 }
-            }
+
             foreach (var deadAssembly in toRemoveAssemblies)
                 deadAssembly.Close();
             foreach (var deadPart in toRemove)
@@ -206,17 +199,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
             AssemblyPart part;
             foreach (var definitionPartSet in AllAssemblyParts.Values)
-            {
                 if (definitionPartSet.TryGetValue(block, out part))
                 {
                     part.PartRemoved();
                     AllAssemblyParts[part.AssemblyDefinition].Remove(block);
                 }
-            }
         }
 
         /// <summary>
-        /// Assigns all valid existing blocks an assembly part. Very slow operation, use sparingly.
+        ///     Assigns all valid existing blocks an assembly part. Very slow operation, use sparingly.
         /// </summary>
         /// <param name="definition"></param>
         public void RegisterExistingBlocks(ModularDefinition definition)
@@ -225,19 +216,17 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
 
             // Iterate through all entities and pick out grids
-            HashSet<IMyEntity> allEntities = new HashSet<IMyEntity>();
+            var allEntities = new HashSet<IMyEntity>();
             MyAPIGateway.Entities.GetEntities(allEntities, entity => entity is IMyCubeGrid);
 
             // Parallel iterate through all grids and check all blocks for definition
             MyAPIGateway.Parallel.ForEach(allEntities, entity =>
             {
                 foreach (var block in ((IMyCubeGrid)entity).GetFatBlocks<IMyCubeBlock>())
-                {
                     if (definition.AllowedBlocks.Contains(block.BlockDefinition.SubtypeId))
                     {
-                        AssemblyPart w = new AssemblyPart(block.SlimBlock, definition);
+                        var w = new AssemblyPart(block.SlimBlock, definition);
                     }
-                }
             });
         }
     }

@@ -1,11 +1,9 @@
-﻿using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw;
-using Sandbox.Definitions;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
 
@@ -13,33 +11,33 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     public class ModularDefinition
     {
+        public string[] AllowedBlocks;
 
-        public string[] AllowedBlocks = null;
+        public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections;
 
-        public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections = null;
-
-        public string BaseBlockSubtype = null;
-        public string Name = null;
+        public string BaseBlockSubtype;
+        public string Name;
 
         public Action<int, IMyCubeBlock, bool> OnPartAdd;
-        public Action<int, IMyCubeBlock, bool> OnPartRemove;
         public Action<int, IMyCubeBlock, bool> OnPartDestroy;
+        public Action<int, IMyCubeBlock, bool> OnPartRemove;
 
 
         public static ModularDefinition Load(PhysicalDefinition definition)
         {
-            ModularDefinition def = new ModularDefinition()
+            var def = new ModularDefinition
             {
                 AllowedBlocks = definition.AllowedBlocks,
                 AllowedConnections = definition.AllowedConnections,
                 BaseBlockSubtype = definition.BaseBlock,
-                Name = definition.Name,
+                Name = definition.Name
             };
-            
+
             if (def.AllowedBlocks == null || def.AllowedConnections == null || def.Name == null)
             {
                 ModularLog.Log("Failed to create new ModularDefinition for " + definition.Name);
-                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", "Failed to create new ModularDefinition for " + definition.Name);
+                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                    "Failed to create new ModularDefinition for " + definition.Name);
                 return null;
             }
 
@@ -53,7 +51,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (lineCheck)
                 if (!DoesBlockConnect(adajent, block, false))
                     return false;
-            
+
             // Get local offset for below
             Matrix localOrientation;
             block.Orientation.GetMatrix(out localOrientation);
@@ -63,10 +61,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             {
                 foreach (var allowedPosKvp in connection)
                 {
-                    Vector3I offsetAllowedPos = (Vector3I)Vector3D.Rotate(allowedPosKvp.Key, localOrientation) + block.Position;
+                    var offsetAllowedPos =
+                        (Vector3I)Vector3D.Rotate(allowedPosKvp.Key, localOrientation) + block.Position;
 
                     // If list is empty OR block is not in whitelist, continue.
-                    if (allowedPosKvp.Value?.Length == 0 || !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.Id.SubtypeName) ?? true))
+                    if (allowedPosKvp.Value?.Length == 0 ||
+                        !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.Id.SubtypeName) ?? true))
                     {
                         if (AssembliesSessionInit.DebugMode)
                             DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Red, 3);
@@ -79,9 +79,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                             DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Green, 3);
                         return true;
                     }
+
                     if (AssembliesSessionInit.DebugMode)
                         DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Red, 3);
                 }
+
                 return false;
             }
 
@@ -91,7 +93,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public bool IsTypeAllowed(string type)
         {
-            foreach (string id in AllowedBlocks)
+            foreach (var id in AllowedBlocks)
                 if (type == id)
                     return true;
             return false;

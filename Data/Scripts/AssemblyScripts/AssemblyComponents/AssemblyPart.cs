@@ -1,55 +1,27 @@
-﻿using Sandbox.Common.ObjectBuilders;
-using Sandbox.Game;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
-using VRage.Game;
-using VRage.Game.Components;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
-using VRage.ObjectBuilders;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 {
     /// <summary>
-    /// Attached to every part in a AssemblyDefinition.
+    ///     Attached to every part in a AssemblyDefinition.
     /// </summary>
     public class AssemblyPart
     {
+        private PhysicalAssembly _memberAssembly;
+        public ModularDefinition AssemblyDefinition;
         public IMySlimBlock Block;
-        public bool IsBaseBlock = false;
-
-        public PhysicalAssembly MemberAssembly
-        {
-            get
-            {
-                return _memberAssembly;
-            }
-            set
-            {
-                if (value != _memberAssembly)
-                {
-                    if (!_memberAssembly?.IsClosing ?? false)
-                        _memberAssembly.RemovePart(this);
-                    _memberAssembly = value;
-                }
-            }
-        }
-        private PhysicalAssembly _memberAssembly = null;
 
         public HashSet<AssemblyPart> ConnectedParts = new HashSet<AssemblyPart>();
-        public ModularDefinition AssemblyDefinition;
+        public bool IsBaseBlock;
 
         public int PrevAssemblyId = -1;
 
         public AssemblyPart(IMySlimBlock block, ModularDefinition AssemblyDefinition)
         {
-            this.Block = block;
+            Block = block;
             this.AssemblyDefinition = AssemblyDefinition;
 
             IsBaseBlock = AssemblyDefinition.BaseBlockSubtype == Block.BlockDefinition.Id.SubtypeName;
@@ -60,6 +32,20 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].Add(block, this);
 
             AssemblyPartManager.I.QueueConnectionCheck(this);
+        }
+
+        public PhysicalAssembly MemberAssembly
+        {
+            get { return _memberAssembly; }
+            set
+            {
+                if (value != _memberAssembly)
+                {
+                    if (!_memberAssembly?.IsClosing ?? false)
+                        _memberAssembly.RemovePart(this);
+                    _memberAssembly = value;
+                }
+            }
         }
 
         public void DoConnectionCheck(bool cascadingUpdate = false, HashSet<AssemblyPart> visited = null)
@@ -75,7 +61,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // If no neighbors AND (is base block OR base block not defined), create assembly.
             if (ConnectedParts.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
             {
-                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this,
+                    AssemblyDefinition);
                 // Trigger cascading update
                 if (IsBaseBlock || cascadingUpdate)
                 {
@@ -84,23 +71,22 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                         if (neighbor.MemberAssembly == null)
                             neighbor.DoConnectionCheck(true);
                 }
+
                 return;
             }
-            
-            HashSet<PhysicalAssembly> assemblies = new HashSet<PhysicalAssembly>();
+
+            var assemblies = new HashSet<PhysicalAssembly>();
             foreach (var neighbor in ConnectedParts)
             {
-                if (neighbor.MemberAssembly != null)
-                {
-                    assemblies.Add(neighbor.MemberAssembly);
-                }
+                if (neighbor.MemberAssembly != null) assemblies.Add(neighbor.MemberAssembly);
                 neighbor.ConnectedParts = neighbor.GetValidNeighborParts();
             }
 
             // Double-checking for null assemblies
             if (assemblies.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
             {
-                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this, AssemblyDefinition);
+                _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this,
+                    AssemblyDefinition);
                 // Trigger cascading update
                 if (IsBaseBlock || cascadingUpdate)
                 {
@@ -109,12 +95,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                         if (neighbor.MemberAssembly == null)
                             neighbor.DoConnectionCheck(true);
                 }
+
                 return;
             }
-            
-            PhysicalAssembly largestAssembly = MemberAssembly;
+
+            var largestAssembly = MemberAssembly;
             foreach (var assembly in assemblies)
-            {
                 if (assembly.ComponentParts.Count > (largestAssembly?.ComponentParts.Count ?? -1))
                 {
                     largestAssembly?.MergeWith(assembly);
@@ -124,27 +110,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 {
                     assembly.MergeWith(largestAssembly);
                 }
-            }
+
             largestAssembly?.AddPart(this);
-            
+
             // Trigger cascading update
             if (IsBaseBlock || cascadingUpdate)
-            {
                 //debug notification begone
                 //MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
-
                 foreach (var neighbor in GetValidNeighborParts())
-                {
                     if (neighbor.MemberAssembly == null)
                         neighbor.DoConnectionCheck(true, visited);
-                }
-            }
-
         }
 
         public void PartRemoved(bool notifyMods = true)
         {
-            int assemblyId = MemberAssembly?.AssemblyId ?? -1;
+            var assemblyId = MemberAssembly?.AssemblyId ?? -1;
             MemberAssembly?.RemovePart(this);
             foreach (var neighbor in ConnectedParts)
                 neighbor.ConnectedParts.Remove(this);
@@ -158,15 +138,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         }
 
         /// <summary>
-        /// Returns attached (as per AssemblyPart) neighbor blocks.
+        ///     Returns attached (as per AssemblyPart) neighbor blocks.
         /// </summary>
         /// <returns></returns>
         public List<IMySlimBlock> GetValidNeighbors(bool MustShareAssembly = false)
         {
-            List<IMySlimBlock> neighbors = new List<IMySlimBlock>();
+            var neighbors = new List<IMySlimBlock>();
             Block.GetNeighbours(neighbors);
 
-            neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(Block, nBlock, true));
+            neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(Block, nBlock));
 
             if (MustShareAssembly)
                 neighbors.RemoveAll(nBlock =>
@@ -174,19 +154,19 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     AssemblyPart part;
                     if (!AssemblyPartManager.I.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out part))
                         return true;
-                    return part.MemberAssembly != this.MemberAssembly;
+                    return part.MemberAssembly != MemberAssembly;
                 });
 
             return neighbors;
         }
 
         /// <summary>
-        /// Returns attached (as per AssemblyPart) neighbor blocks's parts.
+        ///     Returns attached (as per AssemblyPart) neighbor blocks's parts.
         /// </summary>
         /// <returns></returns>
         public HashSet<AssemblyPart> GetValidNeighborParts(bool MustShareAssembly = false)
         {
-            List<AssemblyPart> validNeighbors = new List<AssemblyPart>();
+            var validNeighbors = new List<AssemblyPart>();
             foreach (var nBlock in GetValidNeighbors())
             {
                 AssemblyPart nBlockPart;
@@ -205,10 +185,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // If a block has already been added, return.
             if (!connectedParts.Add(this))
                 return;
-            foreach (var part in ConnectedParts)
-            {
-                part.GetAllConnectedParts(ref connectedParts);
-            }
+            foreach (var part in ConnectedParts) part.GetAllConnectedParts(ref connectedParts);
         }
     }
 }

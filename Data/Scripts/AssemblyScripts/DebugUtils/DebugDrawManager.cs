@@ -1,7 +1,7 @@
-﻿using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
@@ -15,17 +15,24 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
     [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
     public class DebugDrawManager : MySessionComponentBase
     {
+        protected const float OnTopColorMul = 0.5f;
+
+        private const float DepthRatioF = 0.01f;
         // i'm gonna kiss digi on the 
 
         private static DebugDrawManager Instance;
         protected static readonly MyStringId MaterialDot = MyStringId.GetOrCompute("WhiteDot");
         protected static readonly MyStringId MaterialSquare = MyStringId.GetOrCompute("Square");
+        private readonly Dictionary<IMyGps, long> QueuedGps = new Dictionary<IMyGps, long>();
 
-        private Dictionary<Vector3D, MyTuple<long, Color>> QueuedPoints = new Dictionary<Vector3D, MyTuple<long, Color>>();
-        private Dictionary<IMyGps, long> QueuedGps = new Dictionary<IMyGps, long>();
-        private Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>> QueuedGridPoints = new Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>>();
+        private readonly Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>> QueuedGridPoints =
+            new Dictionary<Vector3I, MyTuple<long, Color, IMyCubeGrid>>();
 
-        private Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>> QueuedLinePoints = new Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>>();
+        private readonly Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>> QueuedLinePoints =
+            new Dictionary<MyTuple<Vector3D, Vector3D>, MyTuple<long, Color>>();
+
+        private readonly Dictionary<Vector3D, MyTuple<long, Color>> QueuedPoints =
+            new Dictionary<Vector3D, MyTuple<long, Color>>();
 
         public override void LoadData()
         {
@@ -43,14 +50,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
                 return;
 
             if (Instance.QueuedPoints.ContainsKey(globalPos))
-                Instance.QueuedPoints[globalPos] = new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color);
+                Instance.QueuedPoints[globalPos] =
+                    new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color);
             else
-                Instance.QueuedPoints.Add(globalPos, new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color));
+                Instance.QueuedPoints.Add(globalPos,
+                    new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color));
         }
 
         public static void AddGPS(string name, Vector3D position, float duration)
         {
-            IMyGps gps = MyAPIGateway.Session.GPS.Create(name, string.Empty, position, showOnHud: true, temporary: true);
+            var gps = MyAPIGateway.Session.GPS.Create(name, string.Empty, position, true, true);
             //gps.DiscardAt = TimeSpan.FromSeconds(duration);
             //MyAPIGateway.Session.GPS.AddLocalGps(gps);
             Instance.QueuedGps.Add(gps, DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond));
@@ -67,9 +76,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
                 return;
 
             if (Instance.QueuedGridPoints.ContainsKey(blockPos))
-                Instance.QueuedGridPoints[blockPos] = new MyTuple<long, Color, IMyCubeGrid>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color, grid);
+                Instance.QueuedGridPoints[blockPos] =
+                    new MyTuple<long, Color, IMyCubeGrid>(
+                        DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color, grid);
             else
-                Instance.QueuedGridPoints.Add(blockPos, new MyTuple<long, Color, IMyCubeGrid>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color, grid));
+                Instance.QueuedGridPoints.Add(blockPos,
+                    new MyTuple<long, Color, IMyCubeGrid>(
+                        DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color, grid));
         }
 
         public static void AddLine(Vector3D origin, Vector3D destination, Color color, float duration)
@@ -77,11 +90,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
             if (Instance == null)
                 return;
 
-            MyTuple<Vector3D, Vector3D> key = new MyTuple<Vector3D, Vector3D>(origin, destination);
+            var key = new MyTuple<Vector3D, Vector3D>(origin, destination);
             if (Instance.QueuedLinePoints.ContainsKey(key))
-                Instance.QueuedLinePoints[key] = new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color);
+                Instance.QueuedLinePoints[key] =
+                    new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color);
             else
-                Instance.QueuedLinePoints.Add(key, new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color));
+                Instance.QueuedLinePoints.Add(key,
+                    new MyTuple<long, Color>(DateTime.Now.Ticks + (long)(duration * TimeSpan.TicksPerSecond), color));
         }
 
         public override void Draw()
@@ -97,13 +112,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
             }
 
             foreach (var key in QueuedGps.Keys.ToList())
-            {
                 if (DateTime.Now.Ticks > QueuedGps[key])
                 {
                     MyAPIGateway.Session.GPS.RemoveLocalGps(key);
                     QueuedGps.Remove(key);
                 }
-            }
 
             foreach (var key in QueuedGridPoints.Keys.ToList())
             {
@@ -125,8 +138,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
         private void DrawPoint0(Vector3D globalPos, Color color)
         {
             //MyTransparentGeometry.AddPointBillboard(MaterialDot, color, globalPos, 1.25f, 0, blendType: BlendTypeEnum.PostPP);
-            float depthScale = ToAlwaysOnTop(ref globalPos);
-            MyTransparentGeometry.AddPointBillboard(MaterialDot, color * OnTopColorMul, globalPos, 0.5f * depthScale, 0, blendType: BlendTypeEnum.PostPP);
+            var depthScale = ToAlwaysOnTop(ref globalPos);
+            MyTransparentGeometry.AddPointBillboard(MaterialDot, color * OnTopColorMul, globalPos, 0.5f * depthScale, 0,
+                blendType: BlendTypeEnum.PostPP);
         }
 
         private void DrawGridPoint0(Vector3I blockPos, IMyCubeGrid grid, Color color)
@@ -136,28 +150,28 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw
 
         private void DrawLine0(Vector3D origin, Vector3D destination, Color color)
         {
-            float length = (float)(destination - origin).Length();
-            Vector3D direction = (destination - origin) / length;
+            var length = (float)(destination - origin).Length();
+            var direction = (destination - origin) / length;
 
-            MyTransparentGeometry.AddLineBillboard(MaterialSquare, color, origin, direction, length, 0.5f, blendType: BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddLineBillboard(MaterialSquare, color, origin, direction, length, 0.5f,
+                BlendTypeEnum.PostPP);
 
-            float depthScale = ToAlwaysOnTop(ref origin);
+            var depthScale = ToAlwaysOnTop(ref origin);
             direction *= depthScale;
 
-            MyTransparentGeometry.AddLineBillboard(MaterialSquare, color * OnTopColorMul, origin, direction, length, 0.5f * depthScale, blendType: BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddLineBillboard(MaterialSquare, color * OnTopColorMul, origin, direction, length,
+                0.5f * depthScale, BlendTypeEnum.PostPP);
         }
 
         public static Vector3D GridToGlobal(Vector3I position, IMyCubeGrid grid)
         {
-            return Vector3D.Rotate(((Vector3D)position) * 2.5f, grid.WorldMatrix) + grid.GetPosition();
+            return Vector3D.Rotate((Vector3D)position * 2.5f, grid.WorldMatrix) + grid.GetPosition();
         }
 
-        protected const float OnTopColorMul = 0.5f;
-        const float DepthRatioF = 0.01f;
         protected static float ToAlwaysOnTop(ref Vector3D position)
         {
-            MatrixD camMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
-            position = camMatrix.Translation + ((position - camMatrix.Translation) * DepthRatioF);
+            var camMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
+            position = camMatrix.Translation + (position - camMatrix.Translation) * DepthRatioF;
 
             return DepthRatioF;
         }
