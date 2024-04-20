@@ -37,7 +37,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
         {
             MyAPIGateway.Utilities.DeleteFileInGlobalStorage("ModularAssemblies.log");
             _writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage("ModularAssemblies.log"); // Only creating one debug.log to avoid clutter. Might change in the future.
-            _writer.WriteLine($"Modular Assemblies v{AssembliesSessionInit.ModVersion.X} - Debug Log\n===========================================\n");
+            _writer.WriteLine($"     Modular Assemblies v{AssembliesSessionInit.ModVersion.X} - Debug Log\n===========================================\n");
             _writer.Flush();
         }
 

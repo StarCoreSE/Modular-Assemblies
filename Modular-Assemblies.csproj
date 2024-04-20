@@ -129,6 +129,7 @@
     <Compile Include="Data\Scripts\AssemblyScripts\DebugUtils\SoftHandle.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiDefinitions.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\ApiHandler.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionApi.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionDefs.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Definitions\DefinitionHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\ModularDefiniton.cs" />

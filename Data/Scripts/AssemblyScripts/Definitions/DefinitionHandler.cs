@@ -182,6 +182,36 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             definition.OnPartDestroy += action;
         }
 
+        public void UnregisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)
+        {
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
+            if (definition == null || action == null)
+                return;
+
+            definition.OnPartAdd -= action;
+        }
+
+        public void UnregisterOnPartRemove(string definitionName, Action<int, IMyCubeBlock, bool> action)
+        {
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
+            if (definition == null || action == null)
+                return;
+
+            definition.OnPartRemove -= action;
+        }
+
+        public void UnregisterOnPartDestroy(string definitionName, Action<int, IMyCubeBlock, bool> action)
+        {
+            ModularDefinition definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
+            if (definition == null || action == null)
+                return;
+
+            definition.OnPartDestroy -= action;
+        }
+
         private void CheckValidDefinitions()
         {
             // Get all block definition subtypes

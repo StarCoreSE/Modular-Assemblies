@@ -61,7 +61,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             Stopwatch watch = Stopwatch.StartNew();
 
-            ModularLog.Log("\n===========================================\nUnload started...");
+            ModularLog.Log("=================================\n          Unload started...\n");
 
             CommandHandler.Close();
 

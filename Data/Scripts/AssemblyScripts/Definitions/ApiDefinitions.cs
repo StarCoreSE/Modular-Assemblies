@@ -43,6 +43,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 ["RegisterOnPartAdd"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartAdd),
                 ["RegisterOnPartRemove"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartRemove),
                 ["RegisterOnPartDestroy"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartDestroy),
+                ["UnregisterOnPartAdd"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.UnregisterOnPartAdd),
+                ["UnregisterOnPartRemove"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.UnregisterOnPartRemove),
+                ["UnregisterOnPartDestroy"] = new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.UnregisterOnPartDestroy),
 
                 // Global methods
                 ["IsDebug"] = new Func<bool>(() => AssembliesSessionInit.DebugMode), // Returns whether debug mode is enabled or not.
