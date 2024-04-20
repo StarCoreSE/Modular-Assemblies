@@ -8,8 +8,7 @@ Hey modders!
 
 Modular Assemblies is a mod framework designed to put the 'Engineer' back into 'Space Engineers'. It provides a simpler method of creating multiblock structures that provide added functionality, without killing performance or using esoteric vanilla tools.
 
-This is the base mod, and must be referenced as a dependency for client mods. [Check out the wiki](https://github.com/StarCoreSE/Modular-Assemblies/wiki) for more information and guides.
-Feel free to message [@aristeas.] [on the StarCore discord](https://discord.gg/starcore) if you have any questions, comments, or concerns.
+This is the base mod, and must be referenced as a dependency for client mods. [Check out the wiki](https://github.com/StarCoreSE/Modular-Assemblies/wiki) for more information and guides, and feel free to message [@aristeas.] [on the StarCore discord](https://discord.gg/starcore) if you have any questions or comments.
 
 By [@aristeas.], with help from [validpoint].  
 Debug drawing referenced from [m_digi]'s "(DevTool) Programmable Block Debug API".  
