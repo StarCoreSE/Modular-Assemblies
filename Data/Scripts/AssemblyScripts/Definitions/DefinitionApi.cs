@@ -35,7 +35,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         /// <param name="modContext"></param>
         /// <param name="onLoad">Method to be triggered when the API is ready.</param>
         /// <exception cref="Exception"></exception>
-        public ModularDefinitionApi(IMyModContext modContext, Action onLoad = null)
+        public void Init(IMyModContext modContext, Action onLoad = null)
         {
             if (_isRegistered)
                 throw new Exception($"{GetType().Name}.Load() should not be called multiple times!");
@@ -415,7 +415,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         private bool _apiInit;
         private const long ApiChannel = 8774;
         private IReadOnlyDictionary<string, Delegate> _methodMap;
-        private readonly IMyModContext _modContext;
+        private IMyModContext _modContext;
 
         /// <summary>
         ///     Assigns all API methods. Internal function, avoid editing.
