@@ -58,7 +58,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
             try
             {
-                var definitionSet = MyAPIGateway.Utilities.SerializeFromBinary<DefinitionContainer>(serialized);
+                var definitionSet = MyAPIGateway.Utilities.SerializeFromBinary<ModularDefinitionContainer>(serialized);
                 return RegisterDefinitions(definitionSet);
             }
             catch (Exception ex)
@@ -72,22 +72,22 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
         /// <summary>
         ///     Registers a deserialized definition.
         /// </summary>
-        /// <param name="definitionSet"></param>
+        /// <param name="modularDefinitionSet"></param>
         /// <returns></returns>
-        public string[] RegisterDefinitions(DefinitionContainer definitionSet)
+        public string[] RegisterDefinitions(ModularDefinitionContainer modularDefinitionSet)
         {
             try
             {
-                if (definitionSet == null)
+                if (modularDefinitionSet == null)
                 {
                     ModularLog.Log("Invalid definition container!");
                     return Array.Empty<string>();
                 }
 
-                ModularLog.Log($"Received {definitionSet.PhysicalDefs.Length} definitions.");
+                ModularLog.Log($"Received {modularDefinitionSet.PhysicalDefs.Length} definitions.");
                 var newValidDefinitions = new List<string>();
 
-                foreach (var def in definitionSet.PhysicalDefs)
+                foreach (var def in modularDefinitionSet.PhysicalDefs)
                 {
                     var modDef = ModularDefinition.Load(def);
                     if (modDef == null)

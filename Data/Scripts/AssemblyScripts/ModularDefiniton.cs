@@ -23,7 +23,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public Action<int, IMyCubeBlock, bool> OnPartRemove;
 
 
-        public static ModularDefinition Load(PhysicalDefinition definition)
+        public static ModularDefinition Load(ModularPhysicalDefinition definition)
         {
             var def = new ModularDefinition
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ProtoBuf;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.ModAPI;
@@ -210,14 +211,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         /// <summary>
         ///     Registers a set of definitions with Modular Assemblies Framework.
         /// </summary>
-        /// <param name="definitionContainer"></param>
+        /// <param name="modularDefinitionContainer"></param>
         /// <returns></returns>
-        public string[] RegisterDefinitions(DefinitionDefs.DefinitionContainer definitionContainer)
+        public string[] RegisterDefinitions(DefinitionDefs.ModularDefinitionContainer modularDefinitionContainer)
         {
             var validDefinitions =
-                _registerDefinitions?.Invoke(MyAPIGateway.Utilities.SerializeToBinary(definitionContainer));
+                _registerDefinitions?.Invoke(MyAPIGateway.Utilities.SerializeToBinary(modularDefinitionContainer));
 
-            foreach (var definition in definitionContainer.PhysicalDefs)
+            foreach (var definition in modularDefinitionContainer.PhysicalDefs)
             {
                 RegisterOnPartAdd(definition.Name, definition.OnPartAdd);
                 RegisterOnPartRemove(definition.Name, definition.OnPartRemove);
@@ -540,5 +541,78 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
         }
 
         #endregion
+    }
+
+    public class DefinitionDefs
+    {
+        /// <summary>
+        /// Stores and serialized an array of definitions.
+        /// </summary>
+        [ProtoContract]
+        public class ModularDefinitionContainer
+        {
+            [ProtoMember(1)] internal ModularPhysicalDefinition[] PhysicalDefs;
+        }
+
+        /// <summary>
+        /// Class representing a Modular Assemblies definition.
+        /// </summary>
+        [ProtoContract]
+        public class ModularPhysicalDefinition
+        {
+            /// <summary>
+            ///     The name of this definition. Must be unique!
+            /// </summary>
+            [ProtoMember(1)]
+            public string Name { get; set; }
+
+            /// <summary>
+            ///     Triggered whenever the definition is first loaded.
+            /// </summary>
+            public Action OnInit { get; set; }
+
+            /// <summary>
+            ///     Called when a valid part is placed.
+            ///     <para>
+            ///         Arg1 is PhysicalAssemblyId, Arg2 is BlockEntity, Arg3 is IsBaseBlock
+            ///     </para>
+            /// </summary>
+            public Action<int, IMyCubeBlock, bool> OnPartAdd { get; set; }
+
+            /// <summary>
+            ///     Called when a valid part is removed.
+            ///     <para>
+            ///         Arg1 is PhysicalAssemblyId, Arg2 is BlockEntity, Arg3 is IsBaseBlock
+            ///     </para>
+            /// </summary>
+            public Action<int, IMyCubeBlock, bool> OnPartRemove { get; set; }
+
+            /// <summary>
+            ///     Called when a component part is destroyed. Note - OnPartRemove is called simultaneously.
+            ///     <para>
+            ///         Arg1 is PhysicalAssemblyId, Arg2 is BlockEntity, Arg3 is IsBaseBlock
+            ///     </para>
+            /// </summary>
+            public Action<int, IMyCubeBlock, bool> OnPartDestroy { get; set; }
+
+            /// <summary>
+            ///     All allowed SubtypeIds. The mod will likely misbehave if two mods allow the same blocks, so please be cautious.
+            /// </summary>
+            [ProtoMember(2)]
+            public string[] AllowedBlocks { get; set; }
+
+            /// <summary>
+            ///     Allowed connection directions. Measured in blocks. If an allowed SubtypeId is not included here, connections are
+            ///     allowed on all sides. If the connection type whitelist is empty, all allowed subtypes may connect on that side.
+            /// </summary>
+            [ProtoMember(3)]
+            public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections { get; set; }
+
+            /// <summary>
+            ///     The primary block of a PhysicalAssembly. Make sure this is an AssemblyCore block OR null.
+            /// </summary>
+            [ProtoMember(4)]
+            public string BaseBlock { get; set; }
+        }
     }
 }
