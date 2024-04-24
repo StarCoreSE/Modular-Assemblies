@@ -115,6 +115,7 @@
     <None Include=".vs\VSWorkspaceState.json" />
     <None Include="copy to DS and client.bat" />
     <None Include="Data\Scripts\AssemblyScripts\pressrtest.cs.disabled" />
+    <None Include="modinfo.sbmi" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

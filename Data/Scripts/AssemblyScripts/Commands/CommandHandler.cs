@@ -113,6 +113,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (I == null)
                 return;
 
+            command = command.ToLower();
             if (I._commands.ContainsKey(command))
             {
                 SoftHandle.RaiseException("Attempted to add duplicate command " + command + " from [" + modName + "]",
@@ -130,6 +131,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         /// <param name="command"></param>
         public static void RemoveCommand(string command)
         {
+            command = command.ToLower();
             if (I == null || command == "help" || command == "debug") // Debug and Help should never be removed.
                 return;
             if (I._commands.Remove(command))
