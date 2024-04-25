@@ -27,17 +27,23 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             var def = new ModularDefinition
             {
-                AllowedBlocks = definition.AllowedBlocks,
-                AllowedConnections = definition.AllowedConnections,
-                BaseBlockSubtype = definition.BaseBlock,
+                AllowedBlocks = definition.AllowedBlockSubtypes,
+                AllowedConnections = definition.AllowedConnections ?? new Dictionary<string, Dictionary<Vector3I, string[]>>(),
+                BaseBlockSubtype = definition.BaseBlockSubtype,
                 Name = definition.Name
             };
 
-            if (def.AllowedBlocks == null || def.AllowedConnections == null || def.Name == null)
+            if (def.AllowedBlocks == null || string.IsNullOrEmpty(def.Name))
             {
-                ModularLog.Log("Failed to create new ModularDefinition for " + definition.Name);
+                string msg = $"Failed to create new ModularDefinition for {definition.Name}!";
+                if (def.AllowedBlocks == null)
+                    msg += "\nAllowedBlocks is null or empty!";
+                if (string.IsNullOrEmpty(def.Name))
+                    msg += "\nName is null or empty!";
+
+                ModularLog.Log(msg);
                 MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
-                    "Failed to create new ModularDefinition for " + definition.Name);
+                    msg);
                 return null;
             }
 

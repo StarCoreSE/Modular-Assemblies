@@ -224,7 +224,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
                 RegisterOnPartRemove(definition.Name, definition.OnPartRemove);
                 RegisterOnPartDestroy(definition.Name, definition.OnPartDestroy);
 
-                definition.OnInit?.Invoke();
+                if (validDefinitions.Contains(definition.Name))
+                    definition.OnInit?.Invoke();
             }
 
             return validDefinitions;
@@ -599,7 +600,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
             ///     All allowed SubtypeIds. The mod will likely misbehave if two mods allow the same blocks, so please be cautious.
             /// </summary>
             [ProtoMember(2)]
-            public string[] AllowedBlocks { get; set; }
+            public string[] AllowedBlockSubtypes { get; set; }
 
             /// <summary>
             ///     Allowed connection directions. Measured in blocks. If an allowed SubtypeId is not included here, connections are
@@ -612,7 +613,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.
             ///     The primary block of a PhysicalAssembly. Make sure this is an AssemblyCore block OR null.
             /// </summary>
             [ProtoMember(4)]
-            public string BaseBlock { get; set; }
+            public string BaseBlockSubtype { get; set; }
         }
     }
 }
