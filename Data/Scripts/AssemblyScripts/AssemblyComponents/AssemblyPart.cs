@@ -101,7 +101,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             var largestAssembly = MemberAssembly;
             foreach (var assembly in assemblies)
-                if (assembly.ComponentParts.Count > (largestAssembly?.ComponentParts.Count ?? -1))
+                if (assembly.ComponentParts.Length > (largestAssembly?.ComponentParts.Length ?? -1))
                 {
                     largestAssembly?.MergeWith(assembly);
                     largestAssembly = assembly;

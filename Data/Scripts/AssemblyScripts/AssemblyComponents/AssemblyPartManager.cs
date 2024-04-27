@@ -50,10 +50,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             I = this;
 
-            // None of this should run on client.
-            //if (!MyAPIGateway.Multiplayer.IsServer)
-            //    return;
-
             MyAPIGateway.Entities.OnEntityAdd += OnGridAdd;
             MyAPIGateway.Entities.OnEntityRemove += OnGridRemove;
         }
@@ -64,10 +60,6 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             AllAssemblyParts.Clear();
             AllPhysicalAssemblies.Clear();
             OnAssemblyClose = null;
-
-            // None of this should run on client.
-            //if (!MyAPIGateway.Multiplayer.IsServer)
-            //    return;
 
             ModularLog.Log("AssemblyPartManager closing...");
 
@@ -137,7 +129,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             var existingBlocks = new List<IMySlimBlock>();
             grid.GetBlocks(existingBlocks);
             foreach (var block in existingBlocks)
-                QueuedBlockAdds.Add(block);
+                QueueBlockAdd(block);
         }
 
         private void OnBlockAdd(IMySlimBlock block)
@@ -149,7 +141,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 foreach (var modularDefinition in DefinitionHandler.I.ModularDefinitions)
                 {
                     if (!modularDefinition.IsBlockAllowed(block))
-                        return;
+                        continue;
 
                     var w = new AssemblyPart(block, modularDefinition);
                     // No further init work is needed.
@@ -179,13 +171,18 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             var toRemove = new List<AssemblyPart>();
             var toRemoveAssemblies = new HashSet<PhysicalAssembly>();
             foreach (var definitionPartSet in AllAssemblyParts.Values)
-            foreach (var partKvp in definitionPartSet)
-                if (partKvp.Key.CubeGrid == grid)
+            {
+                foreach (var partKvp in definitionPartSet)
                 {
+                    if (partKvp.Key.CubeGrid != grid)
+                        continue;
+
                     toRemove.Add(partKvp.Value);
                     if (partKvp.Value.MemberAssembly != null)
                         toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
                 }
+            }
+            
 
             foreach (var deadAssembly in toRemoveAssemblies)
                 deadAssembly.Close();
@@ -199,11 +196,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
             AssemblyPart part;
             foreach (var definitionPartSet in AllAssemblyParts.Values)
+            {
                 if (definitionPartSet.TryGetValue(block, out part))
                 {
                     part.PartRemoved();
                     AllAssemblyParts[part.AssemblyDefinition].Remove(block);
                 }
+            }
         }
 
         /// <summary>

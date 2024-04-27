@@ -99,10 +99,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public bool IsTypeAllowed(string type)
         {
-            foreach (var id in AllowedBlocks)
-                if (type == id)
-                    return true;
-            return false;
+            return AllowedBlocks.Contains(type);
         }
 
         public bool IsBlockAllowed(IMySlimBlock block)

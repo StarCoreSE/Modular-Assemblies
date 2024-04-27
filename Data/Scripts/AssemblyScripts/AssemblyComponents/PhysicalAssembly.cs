@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw;
+using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Sandbox.ModAPI;
 using VRageMath;
 
 namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
@@ -15,7 +17,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public AssemblyPart BasePart;
 
         private readonly Color color;
-        public List<AssemblyPart> ComponentParts = new List<AssemblyPart>();
+        private List<AssemblyPart> _componentParts = new List<AssemblyPart>();
+        public AssemblyPart[] ComponentParts => _componentParts.ToArray();
         public bool IsClosing;
 
         public PhysicalAssembly(int id, AssemblyPart basePart, ModularDefinition AssemblyDefinition)
@@ -40,7 +43,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         public void Update()
         {
             if (AssembliesSessionInit.DebugMode)
-                foreach (var part in ComponentParts)
+                foreach (var part in _componentParts)
                 {
                     DebugDrawManager.AddGridPoint(part.Block.Position, part.Block.CubeGrid, color, 0f);
                     foreach (var conPart in part.ConnectedParts)
@@ -52,10 +55,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void AddPart(AssemblyPart part)
         {
-            if (ComponentParts.Contains(part) || part.Block == null)
+            if (_componentParts.Contains(part) || part.Block == null)
                 return;
 
-            ComponentParts.Add(part);
+            _componentParts.Add(part);
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
                 part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
@@ -64,14 +67,14 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void RemovePart(AssemblyPart part)
         {
-            if (!ComponentParts.Remove(part))
+            if (!_componentParts.Remove(part))
                 return;
 
             var neighbors = part.ConnectedParts;
 
             foreach (var neighbor in neighbors) neighbor.ConnectedParts = neighbor.GetValidNeighborParts();
 
-            if (ComponentParts.Count == 0 || part == BasePart)
+            if (_componentParts.Count == 0 || part == BasePart)
             {
                 Close();
                 return;
@@ -97,22 +100,21 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             foreach (var loop in partLoops)
                 if (loop.Count > largestLoop.Count)
                     largestLoop = loop;
-            foreach (var componentPart in ComponentParts.ToArray())
+            foreach (var componentPart in _componentParts.ToArray())
+            {
                 if (!largestLoop.Contains(componentPart))
                 {
-                    ComponentParts.Remove(componentPart);
-                    componentPart.MemberAssembly = null;
-                    componentPart.ConnectedParts.Clear();
-                    AssemblyPartManager.I.QueueConnectionCheck(componentPart);
+                    RemovePart(componentPart);
                 }
+            }
         }
 
         public void Close()
         {
             IsClosing = true;
             AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
-            if (ComponentParts != null)
-                foreach (var part in ComponentParts)
+            if (_componentParts != null)
+                foreach (var part in _componentParts)
                 {
                     //nullcheck for good luck :^)
                     if (part?.MemberAssembly != this)
@@ -122,7 +124,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                     part.ConnectedParts.Clear();
                 }
 
-            ComponentParts = null;
+            _componentParts = null;
             //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
@@ -133,7 +135,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (assembly == null || assembly == this)
                 return;
 
-            foreach (var part in ComponentParts.ToArray()) assembly.AddPart(part);
+            foreach (var part in _componentParts.ToArray()) assembly.AddPart(part);
             Close();
         }
     }
