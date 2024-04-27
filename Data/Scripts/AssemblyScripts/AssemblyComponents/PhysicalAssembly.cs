@@ -67,10 +67,10 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void RemovePart(AssemblyPart part)
         {
-            if (part == null || _componentParts == null)
+            if (!_componentParts?.Remove(part) ?? true)
                 return;
 
-            if (!_componentParts.Remove(part))
+            if (part == null)
                 return;
 
             var neighbors = part.ConnectedParts;
@@ -107,7 +107,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             {
                 if (!largestLoop.Contains(componentPart))
                 {
-                    RemovePart(componentPart);
+                    if (_componentParts?.Remove(componentPart) ?? false)
+                        AssemblyPartManager.I.QueueConnectionCheck(componentPart);
                 }
             }
         }

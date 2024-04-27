@@ -53,7 +53,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (visited == null)
                 visited = new HashSet<AssemblyPart>();
 
-            if (!visited.Add(this))
+            if (!visited.Add(this)) // I don't think this is actually doing a ton but it doesn't hurt really either?
                 return;
 
             ConnectedParts = GetValidNeighborParts();
@@ -115,11 +115,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
             // Trigger cascading update
             if (IsBaseBlock || cascadingUpdate)
+            {
                 //debug notification begone
                 //MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
                 foreach (var neighbor in GetValidNeighborParts())
                     if (neighbor.MemberAssembly == null)
                         neighbor.DoConnectionCheck(true, visited);
+            }
         }
 
         public void PartRemoved(bool notifyMods = true)
