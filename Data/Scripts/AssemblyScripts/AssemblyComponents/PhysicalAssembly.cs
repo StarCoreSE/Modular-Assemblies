@@ -67,6 +67,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void RemovePart(AssemblyPart part)
         {
+            if (part == null || _componentParts == null)
+                return;
+
             if (!_componentParts.Remove(part))
                 return;
 
