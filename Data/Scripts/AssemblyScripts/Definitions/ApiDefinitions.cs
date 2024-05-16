@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
+using Modular_Assemblies.AssemblyScripts.Commands;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRage.Game.ModAPI;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
+namespace Modular_Assemblies.AssemblyScripts.Definitions
 {
     internal class ApiDefinitions
     {
@@ -35,6 +37,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                     new Action<Action<int>>(
                         RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
                 ["RecreateAssembly"] = new Action<int>(RecreateAssembly),
+                ["GetAssemblyProperty"] = new Func<int, string, object>(GetAssemblyProperty),
+                ["SetAssemblyProperty"] = new Action<int, string, object>(SetAssemblyProperty),
+                ["ListAssemblyProperties"] = new Func<int, string[]>(ListAssemblyProperties),
 
                 // Per-part methods
                 ["GetConnectedBlocks"] = new Func<IMyCubeBlock, string, bool, IMyCubeBlock[]>(GetConnectedBlocks),
@@ -84,8 +89,9 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
 
         private IMyCubeBlock[] GetAllParts()
         {
-            var parts = new List<IMyCubeBlock>();
-            foreach (var definitionBlockSet in AssemblyPartManager.I.AllAssemblyParts.Values)
+            var parts = new HashSet<IMyCubeBlock>();
+            foreach (var gridLogic in AssemblyPartManager.I.AllGridLogics.Values)
+            foreach (var definitionBlockSet in gridLogic.AllAssemblyParts.Values)
             foreach (var block in definitionBlockSet.Keys)
                 if (block.FatBlock != null)
                     parts.Add(block.FatBlock);
@@ -156,6 +162,29 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             }
         }
 
+        private object GetAssemblyProperty(int assemblyId, string propertyName)
+        {
+            var assembly = AssemblyPartManager.I.AllPhysicalAssemblies.GetValueOrDefault(assemblyId, null);
+
+            return assembly?.GetProperty(propertyName);
+        }
+
+        private void SetAssemblyProperty(int assemblyId, string propertyName, object value)
+        {
+            var assembly = AssemblyPartManager.I.AllPhysicalAssemblies.GetValueOrDefault(assemblyId, null);
+
+            assembly?.SetProperty(propertyName, value);
+        }
+
+        private string[] ListAssemblyProperties(int assemblyId)
+        {
+            var assembly = AssemblyPartManager.I.AllPhysicalAssemblies.GetValueOrDefault(assemblyId, null);
+            if (assembly == null)
+                return Array.Empty<string>();
+
+            return assembly.Properties.Keys.ToArray();
+        }
+
         #endregion
 
         #region Per-Part Methods
@@ -166,8 +195,12 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (block == null || definition == null)
                 return Array.Empty<IMyCubeBlock>();
 
+            GridAssemblyLogic gridLogic;
+            if (!AssemblyPartManager.I.AllGridLogics.TryGetValue(block.CubeGrid, out gridLogic))
+                return Array.Empty<IMyCubeBlock>();
+
             AssemblyPart wep;
-            if (!AssemblyPartManager.I.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out wep) ||
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out wep) ||
                 wep.ConnectedParts == null)
                 return Array.Empty<IMyCubeBlock>();
 
@@ -194,14 +227,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (definition == null)
                 return -1;
 
-            foreach (var partKvp in AssemblyPartManager.I.AllAssemblyParts[definition])
-            {
-                if (partKvp.Key != block.SlimBlock)
-                    continue;
-                return partKvp.Value.MemberAssembly.AssemblyId;
-            }
+            GridAssemblyLogic gridLogic;
+            if (!AssemblyPartManager.I.AllGridLogics.TryGetValue(block.CubeGrid, out gridLogic))
+                return -1;
 
-            return -1;
+            AssemblyPart part;
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out part))
+                return -1;
+
+            return part.MemberAssembly.AssemblyId;
         }
 
         private void RecreateConnections(IMyCubeBlock block, string definitionName)
@@ -210,12 +244,16 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
             if (definition == null)
                 return;
 
-            var part = AssemblyPartManager.I.AllAssemblyParts[definition].GetValueOrDefault(block.SlimBlock, null);
-            if (part != null)
-            {
-                part.PartRemoved();
-                AssemblyPartManager.I.QueueConnectionCheck(part);
-            }
+            GridAssemblyLogic gridLogic;
+            if (!AssemblyPartManager.I.AllGridLogics.TryGetValue(block.CubeGrid, out gridLogic))
+                return;
+
+            AssemblyPart part;
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out part))
+                return;
+
+            part.PartRemoved();
+            AssemblyPartManager.I.QueueConnectionCheck(part);
         }
 
         #endregion

@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions;
+using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
+using Modular_Assemblies.AssemblyScripts.Commands;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.Definitions;
 using VRage.Game.Components;
 using VRageMath;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
+namespace Modular_Assemblies.AssemblyScripts
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class AssembliesSessionInit : MySessionComponentBase
     {
-        public static readonly Vector2I ModVersion = new Vector2I(1, 1); // Mod version, API version
+        public static readonly Vector2I ModVersion = new Vector2I(2, 2); // Mod version, API version
+        public static readonly Guid ModStorageGuid = new Guid("ba5bfb16-27fe-4f83-8e1b-9fe04ed919d8");
 
         public static AssembliesSessionInit I;
         public static bool DebugMode = false;

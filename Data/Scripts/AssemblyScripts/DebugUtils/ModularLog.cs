@@ -2,7 +2,7 @@
 using System.IO;
 using Sandbox.ModAPI;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
+namespace Modular_Assemblies.AssemblyScripts.DebugUtils
 {
     /// <summary>
     ///     Standard logging class. Outputs to %AppData%\Roaming\Space Engineers\Storage\

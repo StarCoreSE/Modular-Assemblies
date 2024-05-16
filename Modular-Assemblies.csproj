@@ -120,9 +120,12 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\EntityComponents.sbc" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssembliesSessionInit.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPart.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblyPartManager.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\AssemblySerializer.cs" />
+    <Compile Include="Data\Scripts\AssemblyScripts\AssemblyComponents\GridAssemblyLogic.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Commands\CommandMethods.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\Commands\CommandHandler.cs" />
     <Compile Include="Data\Scripts\AssemblyScripts\DebugUtils\DebugDrawManager.cs" />

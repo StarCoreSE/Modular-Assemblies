@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using CoreSystems.Api;
 using VRage;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts; // Make sure this namespace matches with AssemblyDefinition's namespace
+using Modular_Assemblies.AssemblyScripts; // Make sure this namespace matches with AssemblyDefinition's namespace
 
 [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
 public class IncreaseTurretDamageScript : MySessionComponentBase

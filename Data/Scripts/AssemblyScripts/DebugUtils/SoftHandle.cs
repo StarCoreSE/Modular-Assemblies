@@ -1,7 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils
+namespace Modular_Assemblies.AssemblyScripts.DebugUtils
 {
     public class SoftHandle
     {

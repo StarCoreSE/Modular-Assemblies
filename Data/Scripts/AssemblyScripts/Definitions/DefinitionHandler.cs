@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Sandbox.Definitions;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
+using static Modular_Assemblies.AssemblyScripts.Definitions.DefinitionDefs;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
+namespace Modular_Assemblies.AssemblyScripts.Definitions
 {
     /// <summary>
     ///     Handles all communication about definitions.
@@ -107,7 +108,8 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                         continue;
 
                     ModularDefinitionsMap.Add(modDef.Name, modDef);
-                    AssemblyPartManager.I.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, AssemblyPart>());
+                    foreach (var gridLogic in AssemblyPartManager.I.AllGridLogics.Values)
+                        gridLogic.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, AssemblyPart>());
                     newValidDefinitions.Add(modDef.Name);
 
                     if (AssembliesSessionInit.IsSessionInited)
@@ -147,14 +149,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
                 assembly.Close();
             }
 
-            AssemblyPartManager.I.AllAssemblyParts.Remove(ModularDefinitionsMap[definitionName]);
+            foreach (var gridLogic in AssemblyPartManager.I.AllGridLogics.Values)
+                gridLogic.AllAssemblyParts.Remove(ModularDefinitionsMap[definitionName]);
             ModularDefinitionsMap.Remove(definitionName);
             return true;
         }
 
         public static ModularDefinition TryGetDefinition(string definitionName)
         {
-            return I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+            return definitionName == null ? null : I.ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
         }
 
         public void RegisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)

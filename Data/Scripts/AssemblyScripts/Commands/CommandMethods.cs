@@ -1,4 +1,4 @@
-﻿namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Commands
+﻿namespace Modular_Assemblies.AssemblyScripts.Commands
 {
     /// <summary>
     ///     Stores methods for commands in CommandHandler.

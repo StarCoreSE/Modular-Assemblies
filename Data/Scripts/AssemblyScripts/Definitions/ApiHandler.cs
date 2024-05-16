@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Sandbox.ModAPI;
 using VRage;
 using VRageMath;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions
+namespace Modular_Assemblies.AssemblyScripts.Definitions
 {
     internal class ApiHandler
     {

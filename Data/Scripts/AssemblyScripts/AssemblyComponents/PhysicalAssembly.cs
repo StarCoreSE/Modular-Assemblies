@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
-using Sandbox.ModAPI;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRageMath;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
+namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 {
     /// <summary>
     ///     The collection of AssemblyParts attached to a modular assembly base.
     /// </summary>
     public class PhysicalAssembly
     {
+        private List<AssemblyPart> _componentParts = new List<AssemblyPart>();
         public ModularDefinition AssemblyDefinition;
         public int AssemblyId = -1;
         public AssemblyPart BasePart;
 
-        private readonly Color color;
-        private List<AssemblyPart> _componentParts = new List<AssemblyPart>();
-        public AssemblyPart[] ComponentParts => _componentParts.ToArray();
+        private readonly Color Color = new Color(AssembliesSessionInit.I.Random.Next(255),
+            AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255));
+
         public bool IsClosing;
+
+        public Dictionary<string, object> Properties = new Dictionary<string, object>();
 
         public PhysicalAssembly(int id, AssemblyPart basePart, ModularDefinition AssemblyDefinition)
         {
@@ -27,17 +28,28 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 BasePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
             AssemblyId = id;
-            AssemblyPartManager.I.CreatedPhysicalAssemblies++;
 
             if (AssemblyPartManager.I.AllPhysicalAssemblies.ContainsKey(id))
                 throw new Exception("Duplicate assembly ID!");
             AssemblyPartManager.I.AllPhysicalAssemblies.Add(id, this);
-
-
-            color = new Color(AssembliesSessionInit.I.Random.Next(255), AssembliesSessionInit.I.Random.Next(255),
-                AssembliesSessionInit.I.Random.Next(255));
+            AssemblyPartManager.I.CreatedPhysicalAssemblies++;
 
             AddPart(basePart);
+        }
+
+        public AssemblyPart[] ComponentParts = Array.Empty<AssemblyPart>();
+
+        public object GetProperty(string propertyName)
+        {
+            return Properties.GetValueOrDefault(propertyName, null);
+        }
+
+        public void SetProperty(string propertyName, object value)
+        {
+            if (value == null)
+                Properties.Remove(propertyName);
+            else
+                Properties[propertyName] = value;
         }
 
         public void Update()
@@ -45,11 +57,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             if (AssembliesSessionInit.DebugMode)
                 foreach (var part in _componentParts)
                 {
-                    DebugDrawManager.AddGridPoint(part.Block.Position, part.Block.CubeGrid, color, 0f);
+                    DebugDrawManager.AddGridPoint(part.Block.Position, part.Block.CubeGrid, Color, 0f);
                     foreach (var conPart in part.ConnectedParts)
                         DebugDrawManager.AddLine(
                             DebugDrawManager.GridToGlobal(part.Block.Position, part.Block.CubeGrid),
-                            DebugDrawManager.GridToGlobal(conPart.Block.Position, part.Block.CubeGrid), color, 0f);
+                            DebugDrawManager.GridToGlobal(conPart.Block.Position, part.Block.CubeGrid), Color, 0f);
                 }
         }
 
@@ -59,6 +71,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 return;
 
             _componentParts.Add(part);
+            ComponentParts = _componentParts?.ToArray();
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
                 part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
@@ -67,11 +80,13 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
 
         public void RemovePart(AssemblyPart part)
         {
+            if (part == null)
+                return;
+
             if (!_componentParts?.Remove(part) ?? true)
                 return;
 
-            if (part == null)
-                return;
+            ComponentParts = _componentParts?.ToArray();
 
             var neighbors = part.ConnectedParts;
 
@@ -101,14 +116,20 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             // Split apart, keeping this assembly as the largest loop.
             var largestLoop = partLoops[0];
             foreach (var loop in partLoops)
+            {
                 if (loop.Count > largestLoop.Count)
                     largestLoop = loop;
+            }
+
             foreach (var componentPart in _componentParts.ToArray())
             {
-                if (!largestLoop.Contains(componentPart))
+                if (largestLoop.Contains(componentPart))
+                    continue;
+
+                if (_componentParts?.Remove(componentPart) ?? false)
                 {
-                    if (_componentParts?.Remove(componentPart) ?? false)
-                        AssemblyPartManager.I.QueueConnectionCheck(componentPart);
+                    ComponentParts = _componentParts?.ToArray();
+                    AssemblyPartManager.I.QueueConnectionCheck(componentPart);
                 }
             }
         }
@@ -129,6 +150,7 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
                 }
 
             _componentParts = null;
+            ComponentParts = null;
             //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
@@ -138,6 +160,11 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
         {
             if (assembly == null || assembly == this)
                 return;
+
+            // TODO: Add definition action for merging dictionaries
+            if ((bool?)GetProperty("ExistingProperties") ?? false) assembly.Properties = Properties;
+
+            Properties.Clear();
 
             foreach (var part in _componentParts.ToArray()) assembly.AddPart(part);
             Close();

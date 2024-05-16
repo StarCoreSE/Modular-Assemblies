@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugDraw;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRageMath;
-using static Modular_Assemblies.Data.Scripts.AssemblyScripts.Definitions.DefinitionDefs;
+using static Modular_Assemblies.AssemblyScripts.Definitions.DefinitionDefs;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
+namespace Modular_Assemblies.AssemblyScripts
 {
     public class ModularDefinition
     {
@@ -28,14 +27,15 @@ namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
             var def = new ModularDefinition
             {
                 AllowedBlocks = definition.AllowedBlockSubtypes,
-                AllowedConnections = definition.AllowedConnections ?? new Dictionary<string, Dictionary<Vector3I, string[]>>(),
+                AllowedConnections = definition.AllowedConnections ??
+                                     new Dictionary<string, Dictionary<Vector3I, string[]>>(),
                 BaseBlockSubtype = definition.BaseBlockSubtype,
                 Name = definition.Name
             };
 
             if (def.AllowedBlocks == null || string.IsNullOrEmpty(def.Name))
             {
-                string msg = $"Failed to create new ModularDefinition for {definition.Name}!";
+                var msg = $"Failed to create new ModularDefinition for {definition.Name}!";
                 if (def.AllowedBlocks == null)
                     msg += "\nAllowedBlocks is null or empty!";
                 if (string.IsNullOrEmpty(def.Name))

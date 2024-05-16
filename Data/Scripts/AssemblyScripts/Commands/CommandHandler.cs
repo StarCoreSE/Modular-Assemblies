@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Modular_Assemblies.Data.Scripts.AssemblyScripts.DebugUtils;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Sandbox.ModAPI;
 
-namespace Modular_Assemblies.Data.Scripts.AssemblyScripts
+namespace Modular_Assemblies.AssemblyScripts.Commands
 {
     /// <summary>
     ///     Parses commands from chat and triggers relevant methods.
