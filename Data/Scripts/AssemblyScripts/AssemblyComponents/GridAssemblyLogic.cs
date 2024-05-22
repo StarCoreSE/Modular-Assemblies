@@ -82,7 +82,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         private void OnBlockAdd(IMySlimBlock block)
         {
-            if (block == null || block.FatBlock == null)
+            if (block?.FatBlock == null)
                 return;
 
             try
@@ -103,8 +103,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             }
         }
 
-        private void
-            OnBlockRemove(IMySlimBlock block) // TODO: Maintain assemblies between grid split, unless directly affected.
+        private void OnBlockRemove(IMySlimBlock block)
         {
             if (block?.FatBlock == null)
                 return;
@@ -117,9 +116,11 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                     {
                         if ((block.IsMovedBySplit || block.CubeGrid.WillRemoveBlockSplitGrid(block)) &&
                             part.MemberAssembly?.ComponentParts != null)
+                        {
                             if (!SplitAssemblies.ContainsKey(part.MemberAssembly.AssemblyId))
                                 SplitAssemblies.Add(part.MemberAssembly.AssemblyId,
                                     new AssemblySerializer.AssemblyStorage(part.MemberAssembly, true));
+                        }
 
                         part.PartRemoved();
                         AllAssemblyParts[part.AssemblyDefinition].Remove(block);

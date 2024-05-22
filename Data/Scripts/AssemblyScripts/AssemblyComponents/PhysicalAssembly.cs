@@ -112,7 +112,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             if (partLoops.Count <= 1)
                 return;
-
+            ModularLog.Log("Doing loop check.");
             // Split apart, keeping this assembly as the largest loop.
             var largestLoop = partLoops[0];
             foreach (var loop in partLoops)
@@ -120,18 +120,20 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 if (loop.Count > largestLoop.Count)
                     largestLoop = loop;
             }
+            ModularLog.Log("|   " + largestLoop.Count);
 
             foreach (var componentPart in _componentParts.ToArray())
             {
                 if (largestLoop.Contains(componentPart))
                     continue;
 
-                if (_componentParts?.Remove(componentPart) ?? false)
-                {
-                    ComponentParts = _componentParts?.ToArray();
-                    AssemblyPartManager.I.QueueConnectionCheck(componentPart);
-                }
+                if (!_componentParts.Remove(componentPart))
+                    continue;
+                componentPart.RemoveAssemblyUnsafe();
+                AssemblyPartManager.I.QueueConnectionCheck(componentPart);
             }
+
+            ComponentParts = _componentParts?.ToArray();
         }
 
         public void Close()

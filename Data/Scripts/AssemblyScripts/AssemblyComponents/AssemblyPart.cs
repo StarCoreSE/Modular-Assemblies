@@ -51,6 +51,11 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             }
         }
 
+        internal void RemoveAssemblyUnsafe()
+        {
+            _memberAssembly = null;
+        }
+
         private HashSet<PhysicalAssembly> _bufferNeighborAssemblies = new HashSet<PhysicalAssembly>();
         public void DoConnectionCheck(bool cascadingUpdate = false)
         {
@@ -73,7 +78,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             foreach (var neighbor in ConnectedParts)
             {
-                if (neighbor.MemberAssembly != null && neighbor.MemberAssembly.ComponentParts != null)
+                if (neighbor.MemberAssembly?.ComponentParts != null)
                     _bufferNeighborAssemblies.Add(neighbor.MemberAssembly);
                 neighbor.ConnectedParts = neighbor.GetValidNeighborParts();
             }
@@ -120,7 +125,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
                     neighbor.DoConnectionCheck(true);
                 }
-                    
             }
             
             _bufferNeighborAssemblies.Clear();
