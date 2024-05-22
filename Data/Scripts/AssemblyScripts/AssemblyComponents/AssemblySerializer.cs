@@ -109,18 +109,18 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         [ProtoContract]
         public class AssemblyStorage
         {
-            [ProtoMember(13)] private Dictionary<string, bool> _boolProperties;
-
-            [ProtoMember(11)] private Dictionary<string, byte[]> _byteProperties;
-            [ProtoMember(17)] private Dictionary<string, double> _doubleProperties;
-            [ProtoMember(16)] private Dictionary<string, float> _floatProperties;
-            [ProtoMember(14)] private Dictionary<string, int> _intProperties;
-            [ProtoMember(18)] private Dictionary<string, long> _longProperties;
-            [ProtoMember(15)] private Dictionary<string, short> _shortProperties;
-            [ProtoMember(12)] private Dictionary<string, string> _stringProperties;
             [ProtoMember(1)] public long[] BlockEntityIds;
             [ProtoMember(3)] public Vector3I[] BlockPositions;
             [ProtoMember(2)] public string DefinitionName;
+
+            [ProtoMember(11)] private Dictionary<string, byte[]> _byteProperties;
+            [ProtoMember(12)] private Dictionary<string, string> _stringProperties;
+            [ProtoMember(13)] private Dictionary<string, bool> _boolProperties;
+            [ProtoMember(14)] private Dictionary<string, int> _intProperties;
+            [ProtoMember(15)] private Dictionary<string, short> _shortProperties;
+            [ProtoMember(16)] private Dictionary<string, float> _floatProperties;
+            [ProtoMember(17)] private Dictionary<string, double> _doubleProperties;
+            [ProtoMember(18)] private Dictionary<string, long> _longProperties;
 
             private AssemblyStorage()
             {

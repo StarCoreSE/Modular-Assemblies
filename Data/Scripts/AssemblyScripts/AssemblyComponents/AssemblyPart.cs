@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRage.Game.ModAPI;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
@@ -53,7 +54,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         private HashSet<PhysicalAssembly> _bufferNeighborAssemblies = new HashSet<PhysicalAssembly>();
         public void DoConnectionCheck(bool cascadingUpdate = false)
         {
-            _bufferNeighborAssemblies.Clear();
             ConnectedParts = GetValidNeighborParts();
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
@@ -67,6 +67,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         if (neighbor.MemberAssembly == null)
                             neighbor.DoConnectionCheck(true);
 
+                _bufferNeighborAssemblies.Clear();
                 return;
             }
 
@@ -89,29 +90,40 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         if (neighbor.MemberAssembly == null)
                             neighbor.DoConnectionCheck(true);
 
+                _bufferNeighborAssemblies.Clear();
                 return;
             }
 
             var largestAssembly = MemberAssembly;
             foreach (var assembly in _bufferNeighborAssemblies)
-                if (assembly.ComponentParts.Length > (largestAssembly?.ComponentParts.Length ?? -1))
+            {
+                if (assembly?.ComponentParts?.Length > (largestAssembly?.ComponentParts?.Length ?? -1))
                 {
                     largestAssembly?.MergeWith(assembly);
                     largestAssembly = assembly;
                 }
                 else
                 {
-                    assembly.MergeWith(largestAssembly);
+                    assembly?.MergeWith(largestAssembly);
                 }
-
+            }
+            
             largestAssembly?.AddPart(this);
+
             // Trigger cascading update
             if (IsBaseBlock || cascadingUpdate)
-                //debug notification begone
-                //MyAPIGateway.Utilities.ShowNotification("" + GetValidNeighborParts().Count);
+            {
                 foreach (var neighbor in GetValidNeighborParts())
-                    if (neighbor.MemberAssembly == null)
-                        neighbor.DoConnectionCheck(true);
+                {
+                    if (neighbor == null || neighbor.MemberAssembly != null)
+                        continue;
+
+                    neighbor.DoConnectionCheck(true);
+                }
+                    
+            }
+            
+            _bufferNeighborAssemblies.Clear();
         }
 
         public void PartRemoved(bool notifyMods = true)

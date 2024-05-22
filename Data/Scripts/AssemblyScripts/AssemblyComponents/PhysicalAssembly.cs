@@ -158,7 +158,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         public void MergeWith(PhysicalAssembly assembly)
         {
-            if (assembly == null || assembly == this)
+            if (assembly == null || assembly == this || _componentParts == null)
                 return;
 
             // TODO: Add definition action for merging dictionaries
