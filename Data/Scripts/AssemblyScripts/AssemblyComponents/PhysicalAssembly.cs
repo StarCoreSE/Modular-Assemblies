@@ -54,6 +54,9 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         public void Update()
         {
+            if (_componentParts.Count == 0)
+                Close();
+
             if (AssembliesSessionInit.DebugMode)
                 foreach (var part in _componentParts)
                 {
