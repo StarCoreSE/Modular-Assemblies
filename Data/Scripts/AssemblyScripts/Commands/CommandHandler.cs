@@ -56,7 +56,7 @@ namespace Modular_Assemblies.AssemblyScripts.Commands
             I = new CommandHandler();
             MyAPIGateway.Utilities.MessageEnteredSender += I.Command_MessageEnteredSender;
             MyAPIGateway.Utilities.ShowMessage($"Modular Assemblies v{AssembliesSessionInit.ModVersion.X}",
-                "Chat commands registered - run \"!md help\" for help.");
+                "Run \"!md help\" for commands.");
         }
 
         public static void Close()
