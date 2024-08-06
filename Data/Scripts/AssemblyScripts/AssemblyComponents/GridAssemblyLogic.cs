@@ -193,7 +193,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         {
             try
             {
-                if (grid?.Physics == null)
+                if (grid?.Physics == null || grid.Storage == null)
                     return base.IsSerialized();
 
                 var serialized = AssemblySerializer.SerializeGrid(grid);
