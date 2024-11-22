@@ -235,7 +235,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
             if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out part))
                 return -1;
 
-            return part.MemberAssembly.AssemblyId;
+            return part?.MemberAssembly?.AssemblyId ?? -1;
         }
 
         private void RecreateConnections(IMyCubeBlock block, string definitionName)

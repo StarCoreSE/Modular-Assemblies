@@ -74,14 +74,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             ProcessQueuedConnectionChecks();
 
             foreach (var assembly in AllPhysicalAssemblies.Values) assembly.Update();
-
-            if (AssembliesSessionInit.DebugMode)
-            {
-                MyAPIGateway.Utilities.ShowNotification(
-                    $"Assemblies: {AllPhysicalAssemblies.Count}", 1000 / 60);
-                MyAPIGateway.Utilities.ShowNotification($"Definitions: {DefinitionHandler.I.ModularDefinitions.Count}",
-                    1000 / 60);
-            }
         }
 
         private void ProcessQueuedConnectionChecks()
