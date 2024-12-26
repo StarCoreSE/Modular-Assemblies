@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRageMath;
 
@@ -131,6 +132,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 if (!_componentParts.Remove(componentPart))
                     continue;
                 componentPart.RemoveAssemblyUnsafe();
+                componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock, componentPart.IsBaseBlock);
                 AssemblyPartManager.I.QueueConnectionCheck(componentPart);
             }
 
