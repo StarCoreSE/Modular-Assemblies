@@ -165,7 +165,7 @@ namespace Modular_Assemblies.AssemblyScripts.DebugUtils
 
         public static Vector3D GridToGlobal(Vector3I position, IMyCubeGrid grid)
         {
-            return Vector3D.Rotate((Vector3D)position * 2.5f, grid.WorldMatrix) + grid.GetPosition();
+            return Vector3D.Rotate((Vector3D)position * grid.GridSize, grid.WorldMatrix) + grid.GetPosition();
         }
 
         protected static float ToAlwaysOnTop(ref Vector3D position)
