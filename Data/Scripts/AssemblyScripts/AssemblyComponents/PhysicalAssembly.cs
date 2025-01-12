@@ -152,6 +152,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
                     part.MemberAssembly = null;
                     part.ConnectedParts.Clear();
+                    part.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
                 }
 
             _componentParts = null;
