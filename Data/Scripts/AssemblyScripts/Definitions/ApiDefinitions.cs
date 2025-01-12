@@ -31,10 +31,10 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                     new Func<int, IMyCubeGrid>(
                         GetAssemblyGrid), // Returns the IMyCubeGrid an assembly ID is contained in.
                 ["AddOnAssemblyClose"] =
-                    new Action<Action<int>>(
+                    new Action<string, Action<int>>(
                         AddOnAssemblyClose), // Registers an Action<AssemblyId> triggered on assembly removal.
                 ["RemoveOnAssemblyClose"] =
-                    new Action<Action<int>>(
+                    new Action<string, Action<int>>(
                         RemoveOnAssemblyClose), // De-registers an Action<AssemblyId> triggered on assembly removal.
                 ["RecreateAssembly"] = new Action<int>(RecreateAssembly),
                 ["GetAssemblyProperty"] = new Func<int, string, object>(GetAssemblyProperty),
@@ -63,6 +63,8 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                     new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartRemove),
                 ["RegisterOnPartDestroy"] =
                     new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.RegisterOnPartDestroy),
+                ["RegisterOnAssemblyClose"] = new Action<string, Action<int>>(DefinitionHandler.I.RegisterOnAssemblyClose),
+                ["UnregisterOnAssemblyClose"] = new Action<string, Action<int>>(DefinitionHandler.I.UnregisterOnAssemblyClose),
                 ["UnregisterOnPartAdd"] =
                     new Action<string, Action<int, IMyCubeBlock, bool>>(DefinitionHandler.I.UnregisterOnPartAdd),
                 ["UnregisterOnPartRemove"] =
@@ -139,12 +141,12 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
             return wep.ComponentParts[0].Block.CubeGrid;
         }
 
-        private void AddOnAssemblyClose(Action<int> action)
+        private void AddOnAssemblyClose(string definitionName, Action<int> action)
         {
             AssemblyPartManager.I.OnAssemblyClose += action;
         }
 
-        private void RemoveOnAssemblyClose(Action<int> action)
+        private void RemoveOnAssemblyClose(string definitionName, Action<int> action)
         {
             AssemblyPartManager.I.OnAssemblyClose -= action;
         }

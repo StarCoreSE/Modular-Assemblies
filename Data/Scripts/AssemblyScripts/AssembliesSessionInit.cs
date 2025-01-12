@@ -12,7 +12,7 @@ namespace Modular_Assemblies.AssemblyScripts
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class AssembliesSessionInit : MySessionComponentBase
     {
-        public static readonly Vector2I ModVersion = new Vector2I(2, 2); // Mod version, API version
+        public static readonly Vector2I ModVersion = new Vector2I(2, 3); // Mod version, API version
         public static readonly Guid ModStorageGuid = new Guid("ba5bfb16-27fe-4f83-8e1b-9fe04ed919d8");
 
         public static AssembliesSessionInit I;

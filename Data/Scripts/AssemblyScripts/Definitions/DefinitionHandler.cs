@@ -190,6 +190,16 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
             definition.OnPartDestroy += action;
         }
 
+        public void RegisterOnAssemblyClose(string definitionName, Action<int> action)
+        {
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
+            if (definition == null)
+                return;
+
+            definition.OnAssemblyClose += action;
+        }
+
         public void UnregisterOnPartAdd(string definitionName, Action<int, IMyCubeBlock, bool> action)
         {
             var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
@@ -218,6 +228,16 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                 return;
 
             definition.OnPartDestroy -= action;
+        }
+
+        public void UnregisterOnAssemblyClose(string definitionName, Action<int> action)
+        {
+            var definition = ModularDefinitionsMap.GetValueOrDefault(definitionName, null);
+
+            if (definition == null || action == null)
+                return;
+
+            definition.OnAssemblyClose -= action;
         }
 
         private void CheckValidDefinitions()

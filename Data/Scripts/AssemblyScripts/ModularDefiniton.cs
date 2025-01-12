@@ -20,6 +20,7 @@ namespace Modular_Assemblies.AssemblyScripts
         public Action<int, IMyCubeBlock, bool> OnPartAdd;
         public Action<int, IMyCubeBlock, bool> OnPartDestroy;
         public Action<int, IMyCubeBlock, bool> OnPartRemove;
+        public Action<int> OnAssemblyClose;
 
 
         public static ModularDefinition Load(ModularPhysicalDefinition definition)
