@@ -5,6 +5,7 @@ using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Modular_Assemblies.AssemblyScripts.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -36,12 +37,13 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 if (def == null)
                     throw new Exception($"Invalid stored definition \"{storage.DefinitionName}\"!");
 
-                foreach (var block in queuedBlockChecks.ToArray())
+                foreach (var block in queuedBlockChecks)
                 {
                     if (!storage.IsBlockValid(block))
                         continue;
                     newParts.Add(new AssemblyPart(block.SlimBlock, def));
-                    queuedBlockChecks.Remove(block);
+                    if (block is IMyThrust)
+                        MyAPIGateway.Utilities.ShowMessage("OCF", $"Add {block.BlockDefinition.Id.SubtypeName} " + def.Name);
                 }
 
                 if (newParts.Count == 0)
@@ -50,8 +52,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 var newAssembly =
                     new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, newParts[0], def);
 
-                foreach (var part in newParts)
-                    newAssembly.AddPart(part);
+                for (int i = 1; i < newParts.Count; i++)
+                    newAssembly.AddPart(newParts[i]);
 
                 newAssembly.Properties = storage.AssemblyProperties();
                 //ModularLog.Log("Loaded Properties:");
@@ -89,7 +91,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             {
                 foreach (var modularDefinition in DefinitionHandler.I.ModularDefinitions)
                 {
-                    if (!modularDefinition.IsBlockAllowed(block))
+                    if (!modularDefinition.IsBlockAllowed(block) || AllAssemblyParts[modularDefinition].ContainsKey(block))
                         continue;
 
                     var w = new AssemblyPart(block, modularDefinition);
@@ -175,8 +177,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         grid.Storage = new MyModStorageComponent();
                     else if (grid.Storage.TryGetValue(AssembliesSessionInit.ModStorageGuid, out storageStr) &&
                              !string.IsNullOrEmpty(storageStr))
-                        foreach (var storage in
-                                 AssemblySerializer.DeserializeGrid(Convert.FromBase64String(storageStr)))
+                        foreach (var storage in AssemblySerializer.DeserializeGrid(Convert.FromBase64String(storageStr)))
                             LoadStorage(storage, ref existingBlocks);
                 }
 
@@ -217,11 +218,13 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             var toRemove = new List<AssemblyPart>();
             var toRemoveAssemblies = new HashSet<PhysicalAssembly>();
             foreach (var definitionPartSet in AllAssemblyParts.Values)
-            foreach (var partKvp in definitionPartSet)
             {
-                toRemove.Add(partKvp.Value);
-                if (partKvp.Value.MemberAssembly != null)
-                    toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
+                foreach (var partKvp in definitionPartSet)
+                {
+                    toRemove.Add(partKvp.Value);
+                    if (partKvp.Value.MemberAssembly != null)
+                        toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
+                }
             }
 
             foreach (var deadAssembly in toRemoveAssemblies)
