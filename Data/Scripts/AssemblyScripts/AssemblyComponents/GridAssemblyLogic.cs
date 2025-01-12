@@ -42,8 +42,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                     if (!storage.IsBlockValid(block))
                         continue;
                     newParts.Add(new AssemblyPart(block.SlimBlock, def));
-                    if (block is IMyThrust)
-                        MyAPIGateway.Utilities.ShowMessage("OCF", $"Add {block.BlockDefinition.Id.SubtypeName} " + def.Name);
                 }
 
                 if (newParts.Count == 0)
