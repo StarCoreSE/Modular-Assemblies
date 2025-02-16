@@ -190,10 +190,15 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         public void GetAllConnectedParts(ref HashSet<AssemblyPart> connectedParts)
         {
-            // If a block has already been added, return.
-            if (!connectedParts.Add(this))
-                return;
-            foreach (var part in ConnectedParts) part.GetAllConnectedParts(ref connectedParts);
+            var validNeighborCache = new Queue<AssemblyPart>();
+
+            validNeighborCache.Enqueue(this);
+            while (validNeighborCache.Count > 0)
+            {
+                foreach (var neighbor in validNeighborCache.Dequeue().ConnectedParts)
+                    if (connectedParts.Add(neighbor))
+                        validNeighborCache.Enqueue(neighbor);
+            }
         }
     }
 }
