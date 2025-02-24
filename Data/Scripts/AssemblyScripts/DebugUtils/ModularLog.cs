@@ -25,12 +25,12 @@ namespace Modular_Assemblies.AssemblyScripts.DebugUtils
 
         public static void Log(string message)
         {
-            I.?_Log(message);
+            I?._Log(message);
         }
 
         public static void LogException(Exception ex, Type callingType, string prefix = "")
         {
-            I.?_LogException(ex, callingType, prefix);
+            I?._LogException(ex, callingType, prefix);
         }
 
         public static void Init()
