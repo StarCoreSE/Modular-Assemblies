@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Modular_Assemblies.AssemblyScripts.DebugUtils;
+using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRageMath;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
@@ -78,7 +79,17 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             ComponentParts = _componentParts?.ToArray();
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
-                part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
+            {
+                try
+                {
+                    part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
+                }
+                catch (Exception ex)
+                {
+                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                }
+            }
             part.PrevAssemblyId = AssemblyId;
         }
 
@@ -132,7 +143,15 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 if (!_componentParts.Remove(componentPart))
                     continue;
                 componentPart.RemoveAssemblyUnsafe();
-                componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock, componentPart.IsBaseBlock);
+                try
+                {
+                    componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock, componentPart.IsBaseBlock);
+                }
+                catch (Exception ex)
+                {
+                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                }
                 AssemblyPartManager.I.QueueConnectionCheck(componentPart);
             }
 
@@ -142,8 +161,17 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         public void Close()
         {
             IsClosing = true;
-            AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
-            AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
+            try
+            {
+                AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
+                AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
+            }
+            catch (Exception ex)
+            {
+                ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+            }
+            
             if (_componentParts != null)
                 foreach (var part in _componentParts)
                 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Sandbox.ModAPI;
+using VRage.Utils;
 
 namespace Modular_Assemblies.AssemblyScripts.DebugUtils
 {
@@ -64,7 +65,9 @@ namespace Modular_Assemblies.AssemblyScripts.DebugUtils
                 return;
             }
 
-            _Log(prefix + $"Exception in {callingType.FullName}! {ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
+            string exStr = prefix + $"Exception in {callingType.FullName}! {ex.Message}\n{ex.StackTrace}\n{ex.InnerException}";
+            _Log(exStr);
+            MyLog.Default.WriteLineAndConsole(exStr);
         }
     }
 }

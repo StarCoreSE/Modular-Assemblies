@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
@@ -139,9 +141,17 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             if (notifyMods)
             {
-                AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
-                if (Block.Integrity <= 0)
-                    AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                try
+                {
+                    AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                    if (Block.Integrity <= 0)
+                        AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                }
+                catch (Exception ex)
+                {
+                    ModularLog.LogException(ex, typeof(AssemblyPart));
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                }
             }
         }
 
