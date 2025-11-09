@@ -26,7 +26,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         public PhysicalAssembly(int id, AssemblyPart basePart, ModularDefinition AssemblyDefinition)
         {
-            if (AssemblyDefinition.BaseBlockSubtype != null)
+            if (AssemblyDefinition.BaseBlockSubtypes.Length > 0)
                 BasePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
             AssemblyId = id;

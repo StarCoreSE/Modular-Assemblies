@@ -14,7 +14,7 @@ namespace Modular_Assemblies.AssemblyScripts
 
         public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections;
 
-        public string BaseBlockSubtype;
+        public string[] BaseBlockSubtypes;
         public string Name;
 
         public Action<int, IMyCubeBlock, bool> OnPartAdd;
@@ -30,9 +30,10 @@ namespace Modular_Assemblies.AssemblyScripts
                 AllowedBlocks = definition.AllowedBlockSubtypes,
                 AllowedConnections = definition.AllowedConnections ??
                                      new Dictionary<string, Dictionary<Vector3I, string[]>>(),
-                BaseBlockSubtype = definition.BaseBlockSubtype,
+                BaseBlockSubtypes = definition.BaseBlockSubtypes ?? (string.IsNullOrEmpty(definition.BaseBlockSubtype) ? Array.Empty<string>() : new[] { definition.BaseBlockSubtype }),
                 Name = definition.Name
             };
+
 
             if (def.AllowedBlocks == null || string.IsNullOrEmpty(def.Name))
             {

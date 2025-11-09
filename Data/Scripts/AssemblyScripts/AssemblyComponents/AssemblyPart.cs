@@ -27,7 +27,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             Block = block;
             this.AssemblyDefinition = AssemblyDefinition;
 
-            IsBaseBlock = AssemblyDefinition.BaseBlockSubtype == Block.BlockDefinition.Id.SubtypeName;
+            IsBaseBlock = AssemblyDefinition.BaseBlockSubtypes.Length > 0 && AssemblyDefinition.BaseBlockSubtypes.Contains(Block.BlockDefinition.Id.SubtypeName);
 
             _gridLogic = AssemblyPartManager.I.AllGridLogics[block.CubeGrid];
 
@@ -64,7 +64,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             ConnectedParts = GetValidNeighborParts();
 
             // If no neighbors AND (is base block OR base block not defined), create assembly.
-            if (ConnectedParts.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
+            if (ConnectedParts.Count == 0 && (AssemblyDefinition.BaseBlockSubtypes.Length == 0 || IsBaseBlock))
             {
                 _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this,
                     AssemblyDefinition);
@@ -87,7 +87,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             // Double-checking for null assemblies
             // TODO is this even needed?
-            if (_bufferNeighborAssemblies.Count == 0 && (AssemblyDefinition.BaseBlockSubtype == null || IsBaseBlock))
+            if (_bufferNeighborAssemblies.Count == 0 && (AssemblyDefinition.BaseBlockSubtypes.Length == 0 || IsBaseBlock))
             {
                 _memberAssembly = new PhysicalAssembly(AssemblyPartManager.I.CreatedPhysicalAssemblies, this,
                     AssemblyDefinition);
