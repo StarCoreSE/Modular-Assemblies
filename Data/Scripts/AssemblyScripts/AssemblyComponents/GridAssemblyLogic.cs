@@ -6,24 +6,21 @@ using Modular_Assemblies.AssemblyScripts.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_CubeGrid), false)]
-    public class GridAssemblyLogic : MyGameLogicComponent
+    public class GridAssemblyLogic
     {
         public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts =
             new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
 
-        private MyCubeGrid grid;
+        private MyCubeGrid Grid;
 
         /// <summary>
-        ///     List of all AssemblyParts moved by grid split. Used to transfer to new grid logic.
+        ///     List of all AssemblyParts moved by Grid split. Used to transfer to new Grid logic.
         /// </summary>
         private readonly Dictionary<int, AssemblySerializer.AssemblyStorage> SplitAssemblies =
             new Dictionary<int, AssemblySerializer.AssemblyStorage>();
@@ -137,43 +134,36 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         #region Base Methods
 
-        public override void Init(MyObjectBuilder_EntityBase objectBuilder)
+        public void UpdateOnceBeforeFrame(MyCubeGrid grid)
         {
-            grid = Entity as MyCubeGrid;
-            if (grid == null) return;
-
-            NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
-        }
-
-        public override void UpdateOnceBeforeFrame()
-        {
-            if (grid.Physics == null)
+            Grid = grid;
+            if (Grid.Physics == null)
                 return;
 
             try
             {
-                AssemblyPartManager.I.AllGridLogics.Add(grid, this);
+                AssemblyPartManager.I.AllGridLogics.Add(Grid, this);
 
                 foreach (var definition in DefinitionHandler.I.ModularDefinitions)
                     AllAssemblyParts.Add(definition, new Dictionary<IMySlimBlock, AssemblyPart>());
 
-                grid.OnBlockAdded += OnBlockAdd;
-                grid.OnBlockRemoved += OnBlockRemove;
-                grid.OnGridSplit += OnGridSplit;
+                Grid.OnBlockAdded += OnBlockAdd;
+                Grid.OnBlockRemoved += OnBlockRemove;
+                Grid.OnGridSplit += OnGridSplit;
 
-                var existingBlocks = grid.GetFatBlocks().ToList();
-                if (AssemblyPartManager.I.QueuedAssemblyTransfers.ContainsKey(grid))
+                var existingBlocks = Grid.GetFatBlocks().ToList();
+                if (AssemblyPartManager.I.QueuedAssemblyTransfers.ContainsKey(Grid))
                 {
-                    foreach (var storage in AssemblyPartManager.I.QueuedAssemblyTransfers[grid])
+                    foreach (var storage in AssemblyPartManager.I.QueuedAssemblyTransfers[Grid])
                         LoadStorage(storage, ref existingBlocks);
-                    AssemblyPartManager.I.QueuedAssemblyTransfers.Remove(grid);
+                    AssemblyPartManager.I.QueuedAssemblyTransfers.Remove(Grid);
                 }
                 else
                 {
                     string storageStr;
-                    if (grid.Storage == null)
-                        grid.Storage = new MyModStorageComponent();
-                    else if (grid.Storage.TryGetValue(AssembliesSessionInit.ModStorageGuid, out storageStr) &&
+                    if (Grid.Storage == null)
+                        Grid.Storage = new MyModStorageComponent();
+                    else if (Grid.Storage.TryGetValue(AssembliesSessionInit.ModStorageGuid, out storageStr) &&
                              !string.IsNullOrEmpty(storageStr))
                         foreach (var storage in AssemblySerializer.DeserializeGrid(Convert.FromBase64String(storageStr)))
                             LoadStorage(storage, ref existingBlocks);
@@ -188,29 +178,26 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             }
         }
 
-        public override bool IsSerialized()
+        public void UpdateSlow()
         {
             try
             {
-                if (grid?.Physics == null || grid.Storage == null)
-                    return base.IsSerialized();
-
-                var serialized = AssemblySerializer.SerializeGrid(grid);
-
-                grid.Storage.SetValue(AssembliesSessionInit.ModStorageGuid, Convert.ToBase64String(serialized));
+                if (Grid?.Physics == null || Grid.Storage == null)
+                    return;
+        
+                var serialized = AssemblySerializer.SerializeGrid(Grid);
+        
+                Grid.Storage.SetValue(AssembliesSessionInit.ModStorageGuid, Convert.ToBase64String(serialized));
             }
             catch (Exception ex)
             {
                 ModularLog.LogException(ex, typeof(GridAssemblyLogic));
             }
-
-
-            return base.IsSerialized();
         }
 
-        public override void Close()
+        public void Close()
         {
-            if (grid.Physics == null)
+            if (Grid.Physics == null)
                 return;
 
             var toRemove = new List<AssemblyPart>();
@@ -230,7 +217,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             foreach (var deadPart in toRemove)
                 AllAssemblyParts[deadPart.AssemblyDefinition].Remove(deadPart.Block);
 
-            AssemblyPartManager.I.AllGridLogics.Remove(grid);
+            AssemblyPartManager.I.AllGridLogics.Remove(Grid);
         }
 
         #endregion

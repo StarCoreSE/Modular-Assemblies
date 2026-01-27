@@ -1,11 +1,16 @@
-﻿using System;
-using System.Diagnostics;
-using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
+﻿using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
 using Modular_Assemblies.AssemblyScripts.Commands;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Modular_Assemblies.AssemblyScripts.Definitions;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using VRage.Game.Components;
+using VRage.ModAPI;
 using VRageMath;
+using static VRage.Game.MyObjectBuilder_BehaviorTreeDecoratorNode;
 
 namespace Modular_Assemblies.AssemblyScripts
 {
@@ -22,6 +27,9 @@ namespace Modular_Assemblies.AssemblyScripts
         private readonly DefinitionHandler DefinitionHandler = new DefinitionHandler();
         public Random Random = new Random();
 
+        private Dictionary<MyCubeGrid, GridAssemblyLogic> GridAssemblyLogics = new Dictionary<MyCubeGrid, GridAssemblyLogic>();
+        private List<GridAssemblyLogic> GridAssemblyLogicsList = new List<GridAssemblyLogic>();
+
         #region Base Methods
 
         public override void LoadData()
@@ -37,6 +45,14 @@ namespace Modular_Assemblies.AssemblyScripts
 
             CommandHandler.Init();
 
+            MyAPIGateway.Entities.OnEntityAdd += OnEntityAdd; // water mod breaks grid gamelogiccomponents
+            MyAPIGateway.Entities.OnEntityRemove += OnEntityRemove;
+            MyAPIGateway.Entities.GetEntities(null, e =>
+            {
+                OnEntityAdd(e);
+                return false;
+            });
+
             watch.Stop();
             ModularLog.Log($"Fully initialized in {watch.ElapsedMilliseconds}ms.");
         }
@@ -47,6 +63,14 @@ namespace Modular_Assemblies.AssemblyScripts
             {
                 IsSessionInited = true;
                 AssemblyPartManager.UpdateAfterSimulation();
+
+                if (MyAPIGateway.Session.GameplayFrameCounter % 127 == 0) // every ~2 seconds, prime number to spread load
+                {
+                    foreach (var logic in GridAssemblyLogicsList)
+                    {
+                        logic.UpdateSlow();
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -60,6 +84,9 @@ namespace Modular_Assemblies.AssemblyScripts
 
             ModularLog.Log("=================================\n          Unload started...\n");
 
+            MyAPIGateway.Entities.OnEntityAdd -= OnEntityAdd;
+            MyAPIGateway.Entities.OnEntityRemove -= OnEntityRemove;
+
             CommandHandler.Close();
 
             AssemblyPartManager.Unload();
@@ -72,5 +99,29 @@ namespace Modular_Assemblies.AssemblyScripts
         }
 
         #endregion
+
+        private void OnEntityAdd(IMyEntity e)
+        {
+            MyCubeGrid g = e as MyCubeGrid;
+            if (g == null || GridAssemblyLogics.ContainsKey(g))
+                return;
+
+            GridAssemblyLogic l = new GridAssemblyLogic();
+            GridAssemblyLogics.Add(g, l);
+            GridAssemblyLogicsList.Add(l);
+            l.UpdateOnceBeforeFrame(g);
+        }
+
+        private void OnEntityRemove(IMyEntity e)
+        {
+            MyCubeGrid g = e as MyCubeGrid;
+            GridAssemblyLogic l;
+            if (g == null || !GridAssemblyLogics.TryGetValue(g, out l))
+                return;
+
+            l.Close();
+            GridAssemblyLogics.Remove(g);
+            GridAssemblyLogicsList.Remove(l);
+        }
     }
 }
