@@ -22,7 +22,11 @@ namespace Modular_Assemblies.AssemblyScripts.Commands
             ["debug"] = new Command(
                 "Modular Assemblies",
                 "Toggles debug draw.",
-                message => AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode)
+                message =>
+                {
+                    AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode;
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"{(AssembliesSessionInit.DebugMode ? "Enabled" : "Disabled")} debug mode.");
+                })
         };
 
         private CommandHandler()
