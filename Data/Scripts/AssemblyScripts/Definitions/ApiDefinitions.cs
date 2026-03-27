@@ -5,6 +5,7 @@ using Modular_Assemblies.AssemblyScripts.AssemblyComponents;
 using Modular_Assemblies.AssemblyScripts.Commands;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace Modular_Assemblies.AssemblyScripts.Definitions
 {
@@ -45,6 +46,8 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                 ["GetConnectedBlocks"] = new Func<IMyCubeBlock, string, bool, IMyCubeBlock[]>(GetConnectedBlocks),
                 ["GetContainingAssembly"] = new Func<IMyCubeBlock, string, int>(GetContainingAssembly),
                 ["RecreateConnections"] = new Action<IMyCubeBlock, string>(RecreateConnections),
+                ["GetGridConnectingPositions"] = new Func<IMyCubeBlock, string, Vector3I[]>(GetGridConnectingPositions),
+                ["GetLocalConnectingPositions"] = new Func<IMyCubeBlock, string, Vector3I[]>(GetLocalConnectingPositions),
 
                 // Definition methods
                 ["RegisterDefinitions"] =
@@ -256,6 +259,46 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
 
             part.PartRemoved();
             AssemblyPartManager.I.QueueConnectionCheck(part);
+        }
+
+        private Vector3I[] GetGridConnectingPositions(IMyCubeBlock block, string definitionName)
+        {
+            var definition = DefinitionHandler.TryGetDefinition(definitionName);
+
+            if (definition == null)
+                return Array.Empty<Vector3I>();
+
+            // allowed connections are set
+            Dictionary<Vector3I, string[]> allowedConns;
+            if (definition.AllowedConnections.TryGetValue(block.BlockDefinition.SubtypeName, out allowedConns))
+            {
+                int i = 0;
+                Vector3I[] gPoses = new Vector3I[allowedConns.Count];
+                Matrix localOrientation = block.LocalMatrix.GetOrientation();
+                foreach (var lPos in allowedConns.Keys)
+                {
+                    gPoses[i++] = (Vector3I) Vector3D.Rotate(lPos, localOrientation) + block.Position;
+                }
+
+                return gPoses;
+            }
+
+            return Array.Empty<Vector3I>();
+        }
+
+        private Vector3I[] GetLocalConnectingPositions(IMyCubeBlock block, string definitionName)
+        {
+            var definition = DefinitionHandler.TryGetDefinition(definitionName);
+            if (definition == null)
+                return Array.Empty<Vector3I>();
+
+            Dictionary<Vector3I, string[]> allowedConns;
+            if (definition.AllowedConnections.TryGetValue(block.BlockDefinition.SubtypeName, out allowedConns))
+            {
+                return allowedConns.Keys.ToArray();
+            }
+
+            return Array.Empty<Vector3I>();
         }
 
         #endregion

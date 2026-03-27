@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using ProtoBuf;
+﻿using ProtoBuf;
 using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
 using VRage;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -20,7 +20,7 @@ namespace Modular_Assemblies.AssemblyScripts.
         /// <summary>
         ///     The expected API version. Don't touch this unless you're developing for the Modular Assemblies Framework.
         /// </summary>
-        public const int ApiVersion = 3;
+        public const int ApiVersion = 4;
 
         /// <summary>
         ///     Triggered whenever the API is ready - added to by the constructor or manually.
@@ -265,6 +265,81 @@ namespace Modular_Assemblies.AssemblyScripts.
             _recreateConnections?.Invoke(blockPart, definition);
         }
 
+        /// <summary>
+        ///     Returns grid-normalized EXPLICIT connecting positions for a given block.<br/>
+        ///     Does not return *implicit* connecting positions; recommend using (IMySlimBlock).GetNeighbors() instead.
+        /// </summary>
+        /// <param name="blockPart"></param>
+        /// <param name="definition"></param>
+        /// <returns></returns>
+        public Vector3I[] GetGridConnectingPositions(IMyCubeBlock blockPart, string definition)
+        {
+            return _getGridConnectingPositions?.Invoke(blockPart, definition) ?? Array.Empty<Vector3I>();
+        }
+
+        /// <summary>
+        ///     Returns grid-normalized connecting positions for a given block.<br/>
+        ///     Does not return *implicit* connecting positions; recommend using (IMySlimBlock).GetNeighbors() instead.
+        /// </summary>
+        /// <param name="blockPart"></param>
+        /// <param name="definition"></param>
+        /// <returns></returns>
+        public Vector3I[] GetLocalConnectingPositions(IMyCubeBlock blockPart, string definition)
+        {
+            return _getLocalConnectingPositions?.Invoke(blockPart, definition) ?? Array.Empty<Vector3I>();
+        }
+
+        /// <summary>
+        ///     Returns grid-normalized connecting positions for a given block and local position.
+        /// </summary>
+        /// <param name="blockPart"></param>
+        /// <param name="blockLocalPositions"></param>
+        /// <returns></returns>
+        public Vector3I[] GetGridConnectingPositions(IMyCubeBlock blockPart, ICollection<Vector3I> blockLocalPositions)
+        {
+            int i = 0;
+            Vector3I[] gPoses = new Vector3I[blockLocalPositions.Count];
+            Matrix localOrientation = blockPart.LocalMatrix.GetOrientation();
+            foreach (var lPos in blockLocalPositions)
+            {
+                gPoses[i++] = (Vector3I) Vector3D.Rotate(lPos, localOrientation) + blockPart.Position;
+            }
+
+            return gPoses;
+        }
+
+        /// <summary>
+        ///     Returns grid-normalized connecting positions for a given block and local position.
+        /// </summary>
+        /// <param name="blockPart"></param>
+        /// <param name="blockLocalPositions"></param>
+        /// <returns></returns>
+        public Vector3I[] GetGridConnectingPositions(IMyCubeBlock blockPart, params Vector3I[] blockLocalPositions)
+        {
+            int i = 0;
+            Vector3I[] gPoses = new Vector3I[blockLocalPositions.Length];
+            Matrix localOrientation = blockPart.LocalMatrix.GetOrientation();
+            foreach (var lPos in blockLocalPositions)
+            {
+                gPoses[i++] = (Vector3I) Vector3D.Rotate(lPos, localOrientation) + blockPart.Position;
+            }
+
+            return gPoses;
+        }
+
+        /// <summary>
+        ///     Returns grid-normalized connecting positions for a given block and local position.
+        /// </summary>
+        /// <param name="blockPart"></param>
+        /// <param name="blockLocalPosition"></param>
+        /// <returns></returns>
+        public Vector3I GetGridConnectingPosition(IMyCubeBlock blockPart, Vector3I blockLocalPosition)
+        {
+            Matrix localOrientation = blockPart.LocalMatrix.GetOrientation();
+
+            return (Vector3I) Vector3D.Rotate(blockLocalPosition, localOrientation) + blockPart.Position;
+        }
+
         #endregion
 
         #region Definition Methods
@@ -453,6 +528,8 @@ namespace Modular_Assemblies.AssemblyScripts.
         private Func<IMyCubeBlock, string, bool, IMyCubeBlock[]> _getConnectedBlocks;
         private Func<IMyCubeBlock, string, int> _getContainingAssembly;
         private Action<IMyCubeBlock, string> _recreateConnections;
+        private Func<IMyCubeBlock, string, Vector3I[]> _getGridConnectingPositions;
+        private Func<IMyCubeBlock, string, Vector3I[]> _getLocalConnectingPositions;
 
         // Definition methods
         private Func<byte[], string[]> _registerDefinitions;
@@ -511,6 +588,8 @@ namespace Modular_Assemblies.AssemblyScripts.
             SetApiMethod("GetConnectedBlocks", ref _getConnectedBlocks);
             SetApiMethod("GetContainingAssembly", ref _getContainingAssembly);
             SetApiMethod("RecreateConnections", ref _recreateConnections);
+            SetApiMethod("GetGridConnectingPositions", ref _getGridConnectingPositions);
+            SetApiMethod("GetLocalConnectingPositions", ref _getLocalConnectingPositions);
 
             // Definition methods
             SetApiMethod("RegisterDefinitions", ref _registerDefinitions);
