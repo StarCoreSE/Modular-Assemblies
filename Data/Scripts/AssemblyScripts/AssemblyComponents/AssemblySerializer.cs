@@ -78,9 +78,11 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
                 var allAssemblies = new List<AssemblyStorage>();
 
-                foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values.Where(assembly =>
-                             assembly.ComponentParts[0].Block.CubeGrid == grid))
-                    allAssemblies.Add(new AssemblyStorage(assembly, useEntityIds));
+                foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values)
+                {
+                    if (assembly.ComponentParts[0].Block.CubeGrid == grid && assembly.Properties.Count > 0)
+                        allAssemblies.Add(new AssemblyStorage(assembly, useEntityIds));
+                }
 
                 AllAssemblies = allAssemblies.ToArray();
             }
