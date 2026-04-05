@@ -109,7 +109,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
 
                     ModularDefinitionsMap.Add(modDef.Name, modDef);
                     foreach (var gridLogic in AssemblyPartManager.I.AllGridLogics.Values)
-                        gridLogic.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, AssemblyPart>());
+                        gridLogic.AllAssemblyParts.Add(modDef, new Dictionary<IMySlimBlock, List<AssemblyPart>>());
                     newValidDefinitions.Add(modDef.Name);
 
                     if (AssembliesSessionInit.IsSessionInited)

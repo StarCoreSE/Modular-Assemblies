@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
-using Modular_Assemblies.AssemblyScripts.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;

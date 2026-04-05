@@ -34,7 +34,13 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             if (_gridLogic.AllAssemblyParts[AssemblyDefinition].ContainsKey(block))
                 return;
 
-            _gridLogic.AllAssemblyParts[AssemblyDefinition].Add(block, this);
+            List<AssemblyPart> blockParts;
+            if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(block, out blockParts))
+            {
+                blockParts = new List<AssemblyPart>();
+                _gridLogic.AllAssemblyParts[AssemblyDefinition].Add(block, blockParts);
+            }
+            blockParts.Add(this);
 
             AssemblyPartManager.I.QueueConnectionCheck(this);
         }
@@ -104,7 +110,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             var largestAssembly = MemberAssembly;
             foreach (var assembly in _bufferNeighborAssemblies)
             {
-                if (assembly?.ComponentParts?.Length > (largestAssembly?.ComponentParts?.Length ?? -1))
+                if (assembly?.ComponentParts?.Count > (largestAssembly?.ComponentParts?.Count ?? -1))
                 {
                     largestAssembly?.MergeWith(assembly);
                     largestAssembly = assembly;
@@ -143,9 +149,13 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             {
                 try
                 {
-                    AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
-                    if (Block.Integrity <= 0)
-                        AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                    // invoke on next game tick to avoid Issues
+                    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                    {
+                        AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                        if (Block.Integrity <= 0)
+                            AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -159,43 +169,63 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         ///     Returns attached (as per AssemblyPart) neighbor blocks.
         /// </summary>
         /// <returns></returns>
-        public List<IMySlimBlock> GetValidNeighbors(bool MustShareAssembly = false)
+        public List<IMyCubeBlock> GetValidNeighbors(bool mustShareAssembly = false)
         {
-            var neighbors = new List<IMySlimBlock>();
-            Block.GetNeighbours(neighbors);
+            var validNeighbors = new List<IMyCubeBlock>();
 
-            neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(Block, nBlock));
+            var neighborsSlim = new List<IMySlimBlock>();
+            Block.GetNeighbours(neighborsSlim);
 
-            if (MustShareAssembly)
-                neighbors.RemoveAll(nBlock =>
+            foreach (var nBlock in neighborsSlim)
+            {
+                if (nBlock.FatBlock == null || !AssemblyDefinition.DoesBlockConnect(Block, nBlock))
+                    continue;
+
+                List<AssemblyPart> nBlockParts;
+                if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out nBlockParts))
+                    continue;
+
+                foreach (var nBlockPart in nBlockParts)
                 {
-                    AssemblyPart part;
-                    if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out part))
-                        return true;
-                    return part.MemberAssembly != MemberAssembly;
-                });
+                    if (!mustShareAssembly || nBlockPart.MemberAssembly == MemberAssembly)
+                    {
+                        validNeighbors.Add(nBlock.FatBlock);
+                        break;
+                    }
+                }
+            }
 
-            return neighbors;
+            return validNeighbors;
         }
 
         /// <summary>
         ///     Returns attached (as per AssemblyPart) neighbor blocks's parts.
         /// </summary>
         /// <returns></returns>
-        public HashSet<AssemblyPart> GetValidNeighborParts(bool MustShareAssembly = false)
+        public HashSet<AssemblyPart> GetValidNeighborParts(bool mustShareAssembly = false)
         {
-            var validNeighbors = new List<AssemblyPart>();
-            foreach (var nBlock in GetValidNeighbors())
+            var validNeighbors = new HashSet<AssemblyPart>();
+
+            var neighborsSlim = new List<IMySlimBlock>();
+            Block.GetNeighbours(neighborsSlim);
+
+            foreach (var nBlock in neighborsSlim)
             {
-                AssemblyPart nBlockPart;
-                if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out nBlockPart))
+                if (!AssemblyDefinition.DoesBlockConnect(Block, nBlock))
                     continue;
 
-                if (!MustShareAssembly || nBlockPart.MemberAssembly == MemberAssembly)
-                    validNeighbors.Add(nBlockPart);
+                List<AssemblyPart> nBlockParts;
+                if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out nBlockParts))
+                    continue;
+
+                foreach (var nBlockPart in nBlockParts)
+                {
+                    if (!mustShareAssembly || nBlockPart.MemberAssembly == MemberAssembly)
+                        validNeighbors.Add(nBlockPart);
+                }
             }
 
-            return validNeighbors.ToHashSet();
+            return validNeighbors;
         }
 
         public void GetAllConnectedParts(ref HashSet<AssemblyPart> connectedParts)

@@ -5,17 +5,14 @@ using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Modular_Assemblies.AssemblyScripts.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
-using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
-using VRage.ObjectBuilders;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 {
     public class GridAssemblyLogic
     {
-        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts =
-            new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
+        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, List<AssemblyPart>>> AllAssemblyParts =
+            new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, List<AssemblyPart>>>();
 
         private MyCubeGrid Grid;
 
@@ -107,24 +104,40 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             try
             {
-                AssemblyPart part;
                 foreach (var definitionPartSet in AllAssemblyParts.Values)
-                    if (definitionPartSet.TryGetValue(block, out part))
+                {
+                    List<AssemblyPart> parts;
+                    if (definitionPartSet.TryGetValue(block, out parts))
                     {
-                        if ((block.IsMovedBySplit || block.CubeGrid.WillRemoveBlockSplitGrid(block)) &&
-                            part.MemberAssembly?.ComponentParts != null)
+                        foreach (var part in parts)
                         {
-                            if (!SplitAssemblies.ContainsKey(part.MemberAssembly.AssemblyId))
-                                SplitAssemblies.Add(part.MemberAssembly.AssemblyId,
-                                    new AssemblySerializer.AssemblyStorage(part.MemberAssembly, true));
+                            if ((block.IsMovedBySplit || block.CubeGrid.WillRemoveBlockSplitGrid(block)) &&
+                                part.MemberAssembly?.ComponentParts != null)
+                            {
+                                if (!SplitAssemblies.ContainsKey(part.MemberAssembly.AssemblyId))
+                                    SplitAssemblies.Add(part.MemberAssembly.AssemblyId,
+                                        new AssemblySerializer.AssemblyStorage(part.MemberAssembly, true));
+                            }
+
+                            part.PartRemoved();
+                            List<AssemblyPart> thisParts;
+                            if (AllAssemblyParts[part.AssemblyDefinition].TryGetValue(block, out thisParts))
+                            {
+                                if (thisParts.Count <= 1)
+                                {
+                                    AllAssemblyParts[part.AssemblyDefinition].Remove(block);
+                                }
+                                else
+                                {
+                                    thisParts.Remove(part);
+                                }
+                            }
+
+                            if (block.IsMovedBySplit && part.MemberAssembly?.ComponentParts != null)
+                                AssemblyPartManager.I.UnQueueConnectionCheck(part);
                         }
-
-                        part.PartRemoved();
-                        AllAssemblyParts[part.AssemblyDefinition].Remove(block);
-
-                        if (block.IsMovedBySplit && part.MemberAssembly?.ComponentParts != null)
-                            AssemblyPartManager.I.UnQueueConnectionCheck(part);
                     }
+                }
             }
             catch (Exception ex)
             {
@@ -145,7 +158,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 AssemblyPartManager.I.AllGridLogics.Add(Grid, this);
 
                 foreach (var definition in DefinitionHandler.I.ModularDefinitions)
-                    AllAssemblyParts.Add(definition, new Dictionary<IMySlimBlock, AssemblyPart>());
+                    AllAssemblyParts.Add(definition, new Dictionary<IMySlimBlock, List<AssemblyPart>>());
 
                 Grid.OnBlockAdded += OnBlockAdd;
                 Grid.OnBlockRemoved += OnBlockRemove;
@@ -206,16 +219,18 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             {
                 foreach (var partKvp in definitionPartSet)
                 {
-                    toRemove.Add(partKvp.Value);
-                    if (partKvp.Value.MemberAssembly != null)
-                        toRemoveAssemblies.Add(partKvp.Value.MemberAssembly);
+                    toRemove.AddRange(partKvp.Value);
+                    foreach (var part in partKvp.Value)
+                    {
+                        if (part.MemberAssembly != null)
+                            toRemoveAssemblies.Add(part.MemberAssembly);
+                    }
                 }
             }
 
             foreach (var deadAssembly in toRemoveAssemblies)
                 deadAssembly.Close();
-            foreach (var deadPart in toRemove)
-                AllAssemblyParts[deadPart.AssemblyDefinition].Remove(deadPart.Block);
+            AllAssemblyParts.Clear();
 
             AssemblyPartManager.I.AllGridLogics.Remove(Grid);
         }

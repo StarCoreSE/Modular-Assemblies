@@ -20,7 +20,7 @@ namespace Modular_Assemblies.AssemblyScripts.
         /// <summary>
         ///     The expected API version. Don't touch this unless you're developing for the Modular Assemblies Framework.
         /// </summary>
-        public const int ApiVersion = 4;
+        public const int ApiVersion = 5;
 
         /// <summary>
         ///     Triggered whenever the API is ready - added to by the constructor or manually.
@@ -161,7 +161,7 @@ namespace Modular_Assemblies.AssemblyScripts.
         }
 
         /// <summary>
-        ///     Registers an Action<AssemblyId> triggered on assembly removal.
+        ///     Registers an Action(int AssemblyId) triggered on assembly removal.
         /// </summary>
         /// <param name="action"></param>
         public void RegisterOnAssemblyClose(string definitionName, Action<int> action)
@@ -170,7 +170,7 @@ namespace Modular_Assemblies.AssemblyScripts.
         }
 
         /// <summary>
-        ///     De-registers an Action(AssemblyId) triggered on assembly removal.
+        ///     De-registers an Action(int AssemblyId) triggered on assembly removal.
         /// </summary>
         /// <param name="action"></param>
         public void UnregisterOnAssemblyClose(string definitionName, Action<int> action)
@@ -239,20 +239,20 @@ namespace Modular_Assemblies.AssemblyScripts.
         ///         <paramref name="useCached" />: Set this to 'false' if used in OnPartAdd.
         ///     </para>
         /// </summary>
-        public IMyCubeBlock[] GetConnectedBlocks(IMyCubeBlock partBlockId, string definition, bool useCached = true)
+        public IMyCubeBlock[] GetConnectedBlocks(IMyCubeBlock partBlockId, int assemblyId, bool useCached = true)
         {
-            return _getConnectedBlocks?.Invoke(partBlockId, definition, useCached);
+            return _getConnectedBlocksMulti?.Invoke(partBlockId, assemblyId, useCached);
         }
 
         /// <summary>
-        ///     Returns the ID of the assembly containing a given part, or -1 if no assembly was found.
+        ///     Returns the ID of the assemblies containing a given part.
         /// </summary>
         /// <param name="blockPart"></param>
         /// <param name="definition"></param>
         /// <returns></returns>
-        public int GetContainingAssembly(IMyCubeBlock blockPart, string definition)
+        public int[] GetContainingAssemblies(IMyCubeBlock blockPart, string definitionId)
         {
-            return _getContainingAssembly?.Invoke(blockPart, definition) ?? -1;
+            return _getContainingAssemblyMulti?.Invoke(blockPart, definitionId) ?? Array.Empty<int>();
         }
 
         /// <summary>
@@ -260,14 +260,15 @@ namespace Modular_Assemblies.AssemblyScripts.
         /// </summary>
         /// <param name="blockPart"></param>
         /// <param name="definition"></param>
-        public void RecreateConnections(IMyCubeBlock blockPart, string definition)
+        /// <param name="assemblyId"></param>
+        public void RecreateConnections(IMyCubeBlock blockPart, int assemblyId)
         {
-            _recreateConnections?.Invoke(blockPart, definition);
+            _recreateConnectionsMulti?.Invoke(blockPart, assemblyId);
         }
 
         /// <summary>
         ///     Returns grid-normalized EXPLICIT connecting positions for a given block.<br/>
-        ///     Does not return *implicit* connecting positions; recommend using (IMySlimBlock).GetNeighbors() instead.
+        ///     Does not return *implicit* connecting positions (i.e. ones not defined by <see cref="DefinitionDefs.ModularPhysicalDefinition.AllowedConnections"/>); recommend using (IMySlimBlock).GetNeighbors() instead.
         /// </summary>
         /// <param name="blockPart"></param>
         /// <param name="definition"></param>
@@ -279,7 +280,7 @@ namespace Modular_Assemblies.AssemblyScripts.
 
         /// <summary>
         ///     Returns grid-normalized connecting positions for a given block.<br/>
-        ///     Does not return *implicit* connecting positions; recommend using (IMySlimBlock).GetNeighbors() instead.
+        ///     Does not return *implicit* connecting positions (i.e. ones not defined by <see cref="DefinitionDefs.ModularPhysicalDefinition.AllowedConnections"/>); recommend using (IMySlimBlock).GetNeighbors() instead.
         /// </summary>
         /// <param name="blockPart"></param>
         /// <param name="definition"></param>
@@ -362,7 +363,11 @@ namespace Modular_Assemblies.AssemblyScripts.
                 RegisterOnAssemblyClose(definition.Name, definition.OnAssemblyClose);
 
                 if (validDefinitions.Contains(definition.Name))
-                    definition.OnInit?.Invoke();
+                {
+                    // invoke on next game tick to avoid Issues
+                    MyAPIGateway.Utilities.InvokeOnGameThread(() => { definition.OnInit?.Invoke(definition); });
+                }
+                    
             }
 
             return validDefinitions;
@@ -525,9 +530,12 @@ namespace Modular_Assemblies.AssemblyScripts.
         private Func<int, string[]> _listAssemblyProperties;
 
         // Per-part methods
-        private Func<IMyCubeBlock, string, bool, IMyCubeBlock[]> _getConnectedBlocks;
-        private Func<IMyCubeBlock, string, int> _getContainingAssembly;
-        private Action<IMyCubeBlock, string> _recreateConnections;
+        //private Func<IMyCubeBlock, string, bool, IMyCubeBlock[]> _getConnectedBlocks;
+        //private Func<IMyCubeBlock, string, int> _getContainingAssembly;
+        //private Action<IMyCubeBlock, string> _recreateConnections;
+        private Func<IMyCubeBlock, int, bool, IMyCubeBlock[]> _getConnectedBlocksMulti;
+        private Func<IMyCubeBlock, string, int[]> _getContainingAssemblyMulti;
+        private Action<IMyCubeBlock, int> _recreateConnectionsMulti;
         private Func<IMyCubeBlock, string, Vector3I[]> _getGridConnectingPositions;
         private Func<IMyCubeBlock, string, Vector3I[]> _getLocalConnectingPositions;
 
@@ -585,9 +593,12 @@ namespace Modular_Assemblies.AssemblyScripts.
             SetApiMethod("ListAssemblyProperties", ref _listAssemblyProperties);
 
             // Per-part methods
-            SetApiMethod("GetConnectedBlocks", ref _getConnectedBlocks);
-            SetApiMethod("GetContainingAssembly", ref _getContainingAssembly);
-            SetApiMethod("RecreateConnections", ref _recreateConnections);
+            //SetApiMethod("GetConnectedBlocks", ref _getConnectedBlocks);
+            //SetApiMethod("GetContainingAssembly", ref _getContainingAssembly);
+            //SetApiMethod("RecreateConnections", ref _recreateConnections);
+            SetApiMethod("GetConnectedBlocksMulti", ref _getConnectedBlocksMulti);
+            SetApiMethod("GetContainingAssemblyMulti", ref _getContainingAssemblyMulti);
+            SetApiMethod("RecreateConnectionsMulti", ref _recreateConnectionsMulti);
             SetApiMethod("GetGridConnectingPositions", ref _getGridConnectingPositions);
             SetApiMethod("GetLocalConnectingPositions", ref _getLocalConnectingPositions);
 
@@ -717,7 +728,7 @@ namespace Modular_Assemblies.AssemblyScripts.
             /// <summary>
             ///     Triggered whenever the definition is first loaded.
             /// </summary>
-            public Action OnInit { get; set; }
+            public Action<ModularPhysicalDefinition> OnInit { get; set; }
 
             /// <summary>
             ///     Called when a valid part is placed.
@@ -765,7 +776,7 @@ namespace Modular_Assemblies.AssemblyScripts.
             public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections { get; set; }
 
             /// <summary>
-            ///     The primary block of a PhysicalAssembly. Make sure this is an AssemblyCore block OR null.
+            ///     The primary block of a PhysicalAssembly. Make sure this is an AssemblyCore block OR null. Prefer using <see cref="BaseBlockSubtypes"/>.
             /// </summary>
             [ProtoMember(4)]
             public string BaseBlockSubtype { get; set; }
@@ -775,6 +786,12 @@ namespace Modular_Assemblies.AssemblyScripts.
             /// </summary>
             [ProtoMember(5)]
             public string[] BaseBlockSubtypes { get; set; }
+
+            /// <summary>
+            ///     Blocks that can connect to multiple assemblies at once without joining them; i.e. vanilla upgrade modules
+            /// </summary>
+            [ProtoMember(6)]
+            public string[] NonPassthroughSubtypes { get; set; }
         }
     }
 }

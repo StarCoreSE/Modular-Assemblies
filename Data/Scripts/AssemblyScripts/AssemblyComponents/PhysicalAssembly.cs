@@ -2,7 +2,8 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
@@ -12,7 +13,10 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
     /// </summary>
     public class PhysicalAssembly
     {
-        private List<AssemblyPart> _componentParts = new List<AssemblyPart>();
+        public readonly IMyCubeGrid Grid;
+        public Dictionary<IMySlimBlock, AssemblyPart> _componentParts = new Dictionary<IMySlimBlock, AssemblyPart>();
+        public IReadOnlyDictionary<IMySlimBlock, AssemblyPart> ComponentParts => _componentParts;
+
         public ModularDefinition AssemblyDefinition;
         public int AssemblyId = -1;
         public AssemblyPart BasePart;
@@ -30,6 +34,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 BasePart = basePart;
             this.AssemblyDefinition = AssemblyDefinition;
             AssemblyId = id;
+            Grid = basePart.Block.CubeGrid;
 
             if (AssemblyPartManager.I.AllPhysicalAssemblies.ContainsKey(id))
                 throw new Exception("Duplicate assembly ID!");
@@ -38,8 +43,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             AddPart(basePart);
         }
-
-        public AssemblyPart[] ComponentParts = Array.Empty<AssemblyPart>();
 
         public object GetProperty(string propertyName)
         {
@@ -60,35 +63,44 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 Close();
 
             if (AssembliesSessionInit.DebugMode)
-                foreach (var part in _componentParts)
+            {
+                foreach (var part in _componentParts.Values)
                 {
                     DebugDrawManager.AddGridPoint(part.Block.Position, part.Block.CubeGrid, Color, 0f);
                     foreach (var conPart in part.ConnectedParts)
+                    {
                         DebugDrawManager.AddLine(
                             DebugDrawManager.GridToGlobal(part.Block.Position, part.Block.CubeGrid),
                             DebugDrawManager.GridToGlobal(conPart.Block.Position, part.Block.CubeGrid), Color, 0f);
+                    }
                 }
+            }
+                
         }
 
         public void AddPart(AssemblyPart part)
         {
-            if (_componentParts.Contains(part) || part.Block == null)
+            if (part.Block == null || _componentParts.ContainsKey(part.Block))
                 return;
 
-            _componentParts.Add(part);
-            ComponentParts = _componentParts?.ToArray();
+            _componentParts.Add(part.Block, part);
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
             {
-                try
+                // invoke on next game tick to avoid Issues
+                MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
-                    part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
-                }
-                catch (Exception ex)
-                {
-                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
-                }
+                    try
+                    {
+                        part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
+                    }
+                    catch (Exception ex)
+                    {
+                        ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                        MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                            $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                    }
+                });
             }
             part.PrevAssemblyId = AssemblyId;
         }
@@ -98,10 +110,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             if (part == null)
                 return;
 
-            if (!_componentParts?.Remove(part) ?? true)
+            if (!_componentParts?.Remove(part.Block) ?? true)
                 return;
-
-            ComponentParts = _componentParts?.ToArray();
 
             var neighbors = part.ConnectedParts;
 
@@ -135,45 +145,55 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                     largestLoop = loop;
             }
 
-            foreach (var componentPart in _componentParts.ToArray())
+            foreach (var componentPart in _componentParts.Values.ToArray())
             {
                 if (largestLoop.Contains(componentPart))
                     continue;
 
-                if (!_componentParts.Remove(componentPart))
+                if (!_componentParts.Remove(componentPart.Block))
                     continue;
                 componentPart.RemoveAssemblyUnsafe();
-                try
+                // invoke on next game tick to avoid Issues
+                MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
-                    componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock, componentPart.IsBaseBlock);
-                }
-                catch (Exception ex)
-                {
-                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
-                }
+                    try
+                    {
+                        componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock,
+                            componentPart.IsBaseBlock);
+                    }
+                    catch (Exception ex)
+                    {
+                        ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                        MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                            $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                    }
+                });
                 AssemblyPartManager.I.QueueConnectionCheck(componentPart);
             }
-
-            ComponentParts = _componentParts?.ToArray();
         }
 
         public void Close()
         {
             IsClosing = true;
-            try
+            // invoke on next game tick to avoid Issues
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             {
-                AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
-                AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
-            }
-            catch (Exception ex)
-            {
-                ModularLog.LogException(ex, typeof(PhysicalAssembly));
-                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
-            }
-            
+                try
+                {
+                    AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
+                    AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
+                }
+                catch (Exception ex)
+                {
+                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                        $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+                }
+            });
+
             if (_componentParts != null)
-                foreach (var part in _componentParts)
+            {
+                foreach (var part in _componentParts.Values)
                 {
                     //nullcheck for good luck :^)
                     if (part?.MemberAssembly != this)
@@ -182,9 +202,9 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                     part.MemberAssembly = null;
                     part.ConnectedParts.Clear();
                 }
+            }
 
             _componentParts = null;
-            ComponentParts = null;
             //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }
@@ -200,7 +220,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             Properties.Clear();
 
-            foreach (var part in _componentParts.ToArray()) assembly.AddPart(part);
+            foreach (var part in _componentParts.Values.ToArray())
+                assembly.AddPart(part);
             Close();
         }
     }

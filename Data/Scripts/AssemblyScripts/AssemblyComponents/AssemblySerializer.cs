@@ -78,9 +78,11 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
                 var allAssemblies = new List<AssemblyStorage>();
 
-                foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values.Where(assembly =>
-                             assembly.ComponentParts[0].Block.CubeGrid == grid))
-                    allAssemblies.Add(new AssemblyStorage(assembly, useEntityIds));
+                foreach (var assembly in AssemblyPartManager.I.AllPhysicalAssemblies.Values)
+                {
+                    if (assembly.Grid == grid && assembly.Properties.Count > 0)
+                        allAssemblies.Add(new AssemblyStorage(assembly, useEntityIds));
+                }
 
                 AllAssemblies = allAssemblies.ToArray();
             }
@@ -136,7 +138,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 var componentParts = assembly.ComponentParts;
                 if (componentParts == null)
                     return;
-                foreach (var part in componentParts) assemblyPartEntityIds.Add(part.Block.FatBlock.EntityId);
+                foreach (var part in componentParts)
+                    assemblyPartEntityIds.Add(part.Key.FatBlock.EntityId);
 
                 DefinitionName = assembly.AssemblyDefinition.Name + "";
 
@@ -146,9 +149,13 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 }
                 else
                 {
-                    BlockPositions = new Vector3I[componentParts.Length];
-                    for (var i = 0; i < BlockPositions.Length; i++)
-                        BlockPositions[i] = componentParts[i].Block.Position;
+                    BlockPositions = new Vector3I[componentParts.Count];
+
+                    int i = 0;
+                    foreach (var part in componentParts)
+                    {
+                        BlockPositions[i++] = part.Key.Position;
+                    }
                 }
 
                 Populate(assembly.Properties);
