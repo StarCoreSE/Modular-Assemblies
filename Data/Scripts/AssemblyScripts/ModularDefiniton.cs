@@ -14,6 +14,7 @@ namespace Modular_Assemblies.AssemblyScripts
 
         public Dictionary<string, Dictionary<Vector3I, string[]>> AllowedConnections;
 
+        public string[] NonPassthroughSubtypes;
         public string[] BaseBlockSubtypes;
         public string Name;
 
@@ -31,6 +32,7 @@ namespace Modular_Assemblies.AssemblyScripts
                 AllowedConnections = definition.AllowedConnections ??
                                      new Dictionary<string, Dictionary<Vector3I, string[]>>(),
                 BaseBlockSubtypes = definition.BaseBlockSubtypes ?? (string.IsNullOrEmpty(definition.BaseBlockSubtype) ? Array.Empty<string>() : new[] { definition.BaseBlockSubtype }),
+                NonPassthroughSubtypes = definition.NonPassthroughSubtypes ?? Array.Empty<string>(),
                 Name = definition.Name
             };
 

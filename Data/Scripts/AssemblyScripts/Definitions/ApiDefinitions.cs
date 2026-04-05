@@ -4,8 +4,6 @@ using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 

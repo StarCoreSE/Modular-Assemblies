@@ -175,21 +175,17 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         public void Close()
         {
             IsClosing = true;
-            // invoke on next game tick to avoid Issues
-            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            try
             {
-                try
-                {
-                    AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
-                    AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
-                }
-                catch (Exception ex)
-                {
-                    ModularLog.LogException(ex, typeof(PhysicalAssembly));
-                    MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
-                        $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
-                }
-            });
+                AssemblyPartManager.I.OnAssemblyClose?.Invoke(AssemblyId);
+                AssemblyDefinition.OnAssemblyClose?.Invoke(AssemblyId);
+            }
+            catch (Exception ex)
+            {
+                ModularLog.LogException(ex, typeof(PhysicalAssembly));
+                MyAPIGateway.Utilities.ShowMessage("Modular Assemblies",
+                    $"Exception caught {ex.StackTrace.FirstLine()} - check logs for more info.");
+            }
 
             if (_componentParts != null)
             {

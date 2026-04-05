@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Modular_Assemblies.AssemblyScripts.DebugUtils;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
@@ -209,6 +208,9 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             var neighborsSlim = new List<IMySlimBlock>();
             Block.GetNeighbours(neighborsSlim);
 
+            bool isNonPassthrough = AssemblyDefinition.NonPassthroughSubtypes.Contains(Block.BlockDefinition.Id.SubtypeName);
+            List<AssemblyPart> thisBlockParts = _gridLogic.AllAssemblyParts[AssemblyDefinition][Block];
+
             foreach (var nBlock in neighborsSlim)
             {
                 if (!AssemblyDefinition.DoesBlockConnect(Block, nBlock))
@@ -218,10 +220,42 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 if (!_gridLogic.AllAssemblyParts[AssemblyDefinition].TryGetValue(nBlock, out nBlockParts))
                     continue;
 
+                AssemblyPart connectingPart = null;
+
                 foreach (var nBlockPart in nBlockParts)
                 {
-                    if (!mustShareAssembly || nBlockPart.MemberAssembly == MemberAssembly)
-                        validNeighbors.Add(nBlockPart);
+                    if (mustShareAssembly && nBlockPart.MemberAssembly != MemberAssembly)
+                        continue;
+
+                    // special handling for non-passthrough blocks; don't allow crossing assemblies.
+                    if (nBlockPart.AssemblyDefinition.NonPassthroughSubtypes.Contains(nBlockPart.Block.BlockDefinition.Id.SubtypeName) &&
+                        nBlockPart.ConnectedParts.Count > 0 && !nBlockPart.ConnectedParts.Contains(this))
+                        continue;
+
+                    connectingPart = nBlockPart;
+                }
+
+                // special handling for non-passthrough blocks; don't allow crossing assemblies.
+                bool canConnect = true;
+                if (isNonPassthrough && thisBlockParts.Count > 1)
+                {
+                    foreach (var part in thisBlockParts)
+                    {
+                        if (part == this)
+                            continue;
+                        if (part.ConnectedParts.Contains(connectingPart))
+                        {
+                            canConnect = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (connectingPart != null)
+                {
+                    validNeighbors.Add(connectingPart);
+                    if (isNonPassthrough)
+                        break;
                 }
             }
 
