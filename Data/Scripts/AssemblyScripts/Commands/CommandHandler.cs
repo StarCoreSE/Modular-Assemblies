@@ -29,7 +29,7 @@ namespace Modular_Assemblies.AssemblyScripts.Commands
                 }),
             ["poll"] = new Command(
                 "Modular Assemblies",
-                "Prints basic info on all active assemblies.",
+                "Prints basic info on all active assemblies to chat and log.",
                 CommandMethods.PollAssemblies
                 ),
         };

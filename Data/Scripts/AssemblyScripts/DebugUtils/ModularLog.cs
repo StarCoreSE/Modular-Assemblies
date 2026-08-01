@@ -24,6 +24,13 @@ namespace Modular_Assemblies.AssemblyScripts.DebugUtils
             _writer.Flush();
         }
 
+        public static void LogAndChat(string sender, string message)
+        {
+            if (!MyAPIGateway.Utilities.IsDedicated)
+                MyAPIGateway.Utilities.ShowMessage(sender, message);
+            I?._Log(sender + ": " + message);
+        }
+
         public static void Log(string message)
         {
             I?._Log(message);
