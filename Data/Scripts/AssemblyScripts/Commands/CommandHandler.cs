@@ -26,7 +26,12 @@ namespace Modular_Assemblies.AssemblyScripts.Commands
                 {
                     AssembliesSessionInit.DebugMode = !AssembliesSessionInit.DebugMode;
                     MyAPIGateway.Utilities.ShowMessage("Modular Assemblies", $"{(AssembliesSessionInit.DebugMode ? "Enabled" : "Disabled")} debug mode.");
-                })
+                }),
+            ["poll"] = new Command(
+                "Modular Assemblies",
+                "Prints basic info on all active assemblies.",
+                CommandMethods.PollAssemblies
+                ),
         };
 
         private CommandHandler()

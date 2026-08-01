@@ -2,7 +2,6 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using VRageMath;
 
 namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
@@ -39,7 +38,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             AddPart(basePart);
         }
 
-        public AssemblyPart[] ComponentParts = Array.Empty<AssemblyPart>();
+        public IReadOnlyList<AssemblyPart> ComponentParts => _componentParts;
 
         public object GetProperty(string propertyName)
         {
@@ -76,7 +75,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 return;
 
             _componentParts.Add(part);
-            ComponentParts = _componentParts?.ToArray();
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
             {
@@ -100,8 +98,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
             if (!_componentParts?.Remove(part) ?? true)
                 return;
-
-            ComponentParts = _componentParts?.ToArray();
 
             var neighbors = part.ConnectedParts;
 
@@ -154,8 +150,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 }
                 AssemblyPartManager.I.QueueConnectionCheck(componentPart);
             }
-
-            ComponentParts = _componentParts?.ToArray();
         }
 
         public void Close()
@@ -184,7 +178,6 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 }
 
             _componentParts = null;
-            ComponentParts = null;
             //basePart = null;
             AssemblyPartManager.I.AllPhysicalAssemblies.Remove(AssemblyId);
         }

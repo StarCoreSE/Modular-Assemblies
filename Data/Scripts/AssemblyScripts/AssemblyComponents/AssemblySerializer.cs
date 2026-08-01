@@ -148,7 +148,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 }
                 else
                 {
-                    BlockPositions = new Vector3I[componentParts.Length];
+                    BlockPositions = new Vector3I[componentParts.Count];
                     for (var i = 0; i < BlockPositions.Length; i++)
                         BlockPositions[i] = componentParts[i].Block.Position;
                 }
