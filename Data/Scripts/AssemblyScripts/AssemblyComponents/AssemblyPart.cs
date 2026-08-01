@@ -15,19 +15,19 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         private readonly GridAssemblyLogic _gridLogic;
         private PhysicalAssembly _memberAssembly;
         public ModularDefinition AssemblyDefinition;
-        public IMySlimBlock Block;
+        public IMyCubeBlock Block;
 
         public HashSet<AssemblyPart> ConnectedParts = new HashSet<AssemblyPart>();
         public bool IsBaseBlock;
 
         public int PrevAssemblyId = -1;
 
-        public AssemblyPart(IMySlimBlock block, ModularDefinition AssemblyDefinition)
+        public AssemblyPart(IMyCubeBlock block, ModularDefinition AssemblyDefinition)
         {
             Block = block;
             this.AssemblyDefinition = AssemblyDefinition;
 
-            IsBaseBlock = AssemblyDefinition.BaseBlockSubtypes.Length > 0 && AssemblyDefinition.BaseBlockSubtypes.Contains(Block.BlockDefinition.Id.SubtypeName);
+            IsBaseBlock = AssemblyDefinition.BaseBlockSubtypes.Length > 0 && AssemblyDefinition.BaseBlockSubtypes.Contains(Block.BlockDefinition.SubtypeName);
 
             _gridLogic = AssemblyPartManager.I.AllGridLogics[block.CubeGrid];
 
@@ -143,9 +143,9 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             {
                 try
                 {
-                    AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
-                    if (Block.Integrity <= 0)
-                        AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block.FatBlock, IsBaseBlock);
+                    AssemblyDefinition.OnPartRemove?.Invoke(assemblyId, Block, IsBaseBlock);
+                    if (Block.SlimBlock.Integrity <= 0)
+                        AssemblyDefinition.OnPartDestroy?.Invoke(assemblyId, Block, IsBaseBlock);
                 }
                 catch (Exception ex)
                 {
@@ -159,14 +159,23 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         ///     Returns attached (as per AssemblyPart) neighbor blocks.
         /// </summary>
         /// <returns></returns>
-        public List<IMySlimBlock> GetValidNeighbors(bool MustShareAssembly = false)
+        public List<IMyCubeBlock> GetValidNeighbors(bool MustShareAssembly = false)
         {
-            var neighbors = new List<IMySlimBlock>();
-            Block.GetNeighbours(neighbors);
+            var slimNeighbors = new List<IMySlimBlock>();
+            Block.SlimBlock.GetNeighbours(slimNeighbors);
+            var neighbors = new List<IMyCubeBlock>(slimNeighbors.Count);
+            foreach (var neighbor in slimNeighbors)
+            {
+                if (neighbor.FatBlock != null)
+                {
+                    neighbors.Add(neighbor.FatBlock);
+                }
+            }
 
             neighbors.RemoveAll(nBlock => !AssemblyDefinition.DoesBlockConnect(Block, nBlock));
 
             if (MustShareAssembly)
+            {
                 neighbors.RemoveAll(nBlock =>
                 {
                     AssemblyPart part;
@@ -174,6 +183,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         return true;
                     return part.MemberAssembly != MemberAssembly;
                 });
+            }
 
             return neighbors;
         }

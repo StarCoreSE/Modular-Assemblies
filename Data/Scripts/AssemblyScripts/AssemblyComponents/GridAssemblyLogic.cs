@@ -14,8 +14,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 {
     public class GridAssemblyLogic
     {
-        public Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>> AllAssemblyParts =
-            new Dictionary<ModularDefinition, Dictionary<IMySlimBlock, AssemblyPart>>();
+        public Dictionary<ModularDefinition, Dictionary<IMyCubeBlock, AssemblyPart>> AllAssemblyParts =
+            new Dictionary<ModularDefinition, Dictionary<IMyCubeBlock, AssemblyPart>>();
 
         private MyCubeGrid Grid;
 
@@ -38,7 +38,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 {
                     if (!storage.IsBlockValid(block))
                         continue;
-                    newParts.Add(new AssemblyPart(block.SlimBlock, def));
+                    newParts.Add(new AssemblyPart(block, def));
                 }
 
                 if (newParts.Count == 0)
@@ -77,11 +77,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             }
         }
 
-        private void OnBlockAdd(IMySlimBlock block)
+        private void OnBlockAdd(IMyCubeBlock block)
         {
-            if (block?.FatBlock == null)
-                return;
-
             try
             {
                 foreach (var modularDefinition in DefinitionHandler.I.ModularDefinitions)
@@ -100,18 +97,15 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             }
         }
 
-        private void OnBlockRemove(IMySlimBlock block)
+        private void OnBlockRemove(IMyCubeBlock block)
         {
-            if (block?.FatBlock == null)
-                return;
-
             try
             {
                 AssemblyPart part;
                 foreach (var definitionPartSet in AllAssemblyParts.Values)
                     if (definitionPartSet.TryGetValue(block, out part))
                     {
-                        if ((block.IsMovedBySplit || block.CubeGrid.WillRemoveBlockSplitGrid(block)) &&
+                        if ((block.SlimBlock.IsMovedBySplit || block.CubeGrid.WillRemoveBlockSplitGrid(block.SlimBlock)) &&
                             part.MemberAssembly?.ComponentParts != null)
                         {
                             if (!SplitAssemblies.ContainsKey(part.MemberAssembly.AssemblyId))
@@ -122,7 +116,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         part.PartRemoved();
                         AllAssemblyParts[part.AssemblyDefinition].Remove(block);
 
-                        if (block.IsMovedBySplit && part.MemberAssembly?.ComponentParts != null)
+                        if (block.SlimBlock.IsMovedBySplit && part.MemberAssembly?.ComponentParts != null)
                             AssemblyPartManager.I.UnQueueConnectionCheck(part);
                     }
             }
@@ -145,10 +139,10 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 AssemblyPartManager.I.AllGridLogics.Add(Grid, this);
 
                 foreach (var definition in DefinitionHandler.I.ModularDefinitions)
-                    AllAssemblyParts.Add(definition, new Dictionary<IMySlimBlock, AssemblyPart>());
+                    AllAssemblyParts.Add(definition, new Dictionary<IMyCubeBlock, AssemblyPart>());
 
-                Grid.OnBlockAdded += OnBlockAdd;
-                Grid.OnBlockRemoved += OnBlockRemove;
+                Grid.OnFatBlockAdded += OnBlockAdd;
+                Grid.OnFatBlockRemoved += OnBlockRemove;
                 Grid.OnGridSplit += OnGridSplit;
 
                 var existingBlocks = Grid.GetFatBlocks().ToList();
@@ -170,7 +164,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 }
 
                 foreach (var block in existingBlocks)
-                    OnBlockAdd(block.SlimBlock);
+                    OnBlockAdd(block);
             }
             catch (Exception ex)
             {

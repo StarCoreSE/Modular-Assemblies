@@ -138,7 +138,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 var componentParts = assembly.ComponentParts;
                 if (componentParts == null)
                     return;
-                foreach (var part in componentParts) assemblyPartEntityIds.Add(part.Block.FatBlock.EntityId);
+                foreach (var part in componentParts) assemblyPartEntityIds.Add(part.Block.EntityId);
 
                 DefinitionName = assembly.AssemblyDefinition.Name + "";
 

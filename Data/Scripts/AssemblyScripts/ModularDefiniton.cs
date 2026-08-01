@@ -53,7 +53,7 @@ namespace Modular_Assemblies.AssemblyScripts
             return def;
         }
 
-        public bool DoesBlockConnect(IMySlimBlock block, IMySlimBlock adajent, bool lineCheck = true)
+        public bool DoesBlockConnect(IMyCubeBlock block, IMyCubeBlock adajent, bool lineCheck = true)
         {
             // Check if adjacent block connects first, but don't make an infinite loop
             if (lineCheck)
@@ -65,7 +65,7 @@ namespace Modular_Assemblies.AssemblyScripts
             block.Orientation.GetMatrix(out localOrientation);
 
             Dictionary<Vector3I, string[]> connection;
-            if (AllowedConnections.TryGetValue(block.BlockDefinition.Id.SubtypeName, out connection))
+            if (AllowedConnections.TryGetValue(block.BlockDefinition.SubtypeName, out connection))
             {
                 foreach (var allowedPosKvp in connection)
                 {
@@ -74,7 +74,7 @@ namespace Modular_Assemblies.AssemblyScripts
 
                     // If list is empty OR block is not in whitelist, continue.
                     if (allowedPosKvp.Value?.Length == 0 ||
-                        !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.Id.SubtypeName) ?? true))
+                        !(allowedPosKvp.Value?.Contains(adajent.BlockDefinition.SubtypeName) ?? true))
                     {
                         if (AssembliesSessionInit.DebugMode)
                             DebugDrawManager.AddGridPoint(offsetAllowedPos, block.CubeGrid, Color.Red, 3);
@@ -104,9 +104,9 @@ namespace Modular_Assemblies.AssemblyScripts
             return AllowedBlocks.Contains(type);
         }
 
-        public bool IsBlockAllowed(IMySlimBlock block)
+        public bool IsBlockAllowed(IMyCubeBlock block)
         {
-            return IsTypeAllowed(block.BlockDefinition.Id.SubtypeName);
+            return IsTypeAllowed(block.BlockDefinition.SubtypeName);
         }
     }
 }

@@ -98,8 +98,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
             foreach (var gridLogic in AssemblyPartManager.I.AllGridLogics.Values)
             foreach (var definitionBlockSet in gridLogic.AllAssemblyParts.Values)
             foreach (var block in definitionBlockSet.Keys)
-                if (block.FatBlock != null)
-                    parts.Add(block.FatBlock);
+                parts.Add(block);
             return parts.ToArray();
         }
 
@@ -120,8 +119,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
 
             var parts = new List<IMyCubeBlock>();
             foreach (var part in wep.ComponentParts)
-                if (part.Block.FatBlock != null)
-                    parts.Add(part.Block.FatBlock);
+                parts.Add(part.Block);
 
             return parts.ToArray();
         }
@@ -205,7 +203,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                 return Array.Empty<IMyCubeBlock>();
 
             AssemblyPart wep;
-            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out wep) ||
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block, out wep) ||
                 wep.ConnectedParts == null)
                 return Array.Empty<IMyCubeBlock>();
 
@@ -213,14 +211,13 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
             if (useCached)
             {
                 foreach (var part in wep.ConnectedParts)
-                    if (part.Block.FatBlock != null)
-                        parts.Add(part.Block.FatBlock);
+                    if (part.Block != null)
+                        parts.Add(part.Block);
             }
             else
             {
                 foreach (var part in wep.GetValidNeighbors(true))
-                    if (part.FatBlock != null)
-                        parts.Add(part.FatBlock);
+                    parts.Add(part);
             }
 
             return parts.ToArray();
@@ -237,7 +234,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                 return -1;
 
             AssemblyPart part;
-            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out part))
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block, out part))
                 return -1;
 
             return part?.MemberAssembly?.AssemblyId ?? -1;
@@ -254,7 +251,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                 return;
 
             AssemblyPart part;
-            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block.SlimBlock, out part))
+            if (!gridLogic.AllAssemblyParts[definition].TryGetValue(block, out part))
                 return;
 
             part.PartRemoved();

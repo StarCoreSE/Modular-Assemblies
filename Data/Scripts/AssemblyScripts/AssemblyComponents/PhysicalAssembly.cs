@@ -74,13 +74,18 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             if (_componentParts.Contains(part) || part.Block == null)
                 return;
 
+            if (part.MemberAssembly != null)
+            {
+                part.MemberAssembly.RemovePart(part);
+            }
+
             _componentParts.Add(part);
             part.MemberAssembly = this;
             if (part.PrevAssemblyId != AssemblyId)
             {
                 try
                 {
-                    part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block.FatBlock, part.IsBaseBlock);
+                    part.AssemblyDefinition.OnPartAdd?.Invoke(AssemblyId, part.Block, part.IsBaseBlock);
                 }
                 catch (Exception ex)
                 {
@@ -141,7 +146,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 componentPart.RemoveAssemblyUnsafe();
                 try
                 {
-                    componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block.FatBlock, componentPart.IsBaseBlock);
+                    componentPart.AssemblyDefinition.OnPartRemove?.Invoke(AssemblyId, componentPart.Block, componentPart.IsBaseBlock);
                 }
                 catch (Exception ex)
                 {

@@ -107,7 +107,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 foreach (var block in ((IMyCubeGrid)entity).GetFatBlocks<IMyCubeBlock>())
                     if (definition.AllowedBlocks.Contains(block.BlockDefinition.SubtypeId))
                     {
-                        var w = new AssemblyPart(block.SlimBlock, definition);
+                        var w = new AssemblyPart(block, definition);
                     }
             });
         }
