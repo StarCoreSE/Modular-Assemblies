@@ -115,9 +115,7 @@ namespace Modular_Assemblies.AssemblyScripts.Definitions
                     if (AssembliesSessionInit.IsSessionInited)
                     {
                         CheckDefinitionValid(modDef);
-                        AssemblyPartManager.I
-                            .RegisterExistingBlocks(
-                                modDef); // We only want to do this if blocks already exist in the world.
+                        AssemblyPartManager.I.RegisterExistingBlocks(modDef); // We only want to do this if blocks already exist in the world.
                     }
                 }
 

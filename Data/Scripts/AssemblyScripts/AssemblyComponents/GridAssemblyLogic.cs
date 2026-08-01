@@ -17,13 +17,18 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
         public Dictionary<ModularDefinition, Dictionary<IMyCubeBlock, AssemblyPart>> AllAssemblyParts =
             new Dictionary<ModularDefinition, Dictionary<IMyCubeBlock, AssemblyPart>>();
 
-        private MyCubeGrid Grid;
+        private readonly MyCubeGrid Grid;
 
         /// <summary>
         ///     List of all AssemblyParts moved by Grid split. Used to transfer to new Grid logic.
         /// </summary>
         private readonly Dictionary<int, AssemblySerializer.AssemblyStorage> SplitAssemblies =
             new Dictionary<int, AssemblySerializer.AssemblyStorage>();
+
+        public GridAssemblyLogic(MyCubeGrid grid)
+        {
+            Grid = grid;
+        }
 
         private void LoadStorage(AssemblySerializer.AssemblyStorage storage, ref List<MyCubeBlock> queuedBlockChecks)
         {
@@ -38,7 +43,9 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                 {
                     if (!storage.IsBlockValid(block))
                         continue;
-                    newParts.Add(new AssemblyPart(block, def));
+                    AssemblyPart part = new AssemblyPart(block, def);
+                    newParts.Add(part);
+                    ModularLog.Log($"{Grid.EntityId} Create part {part.PartIdUnsafe} STORAGE");
                 }
 
                 if (newParts.Count == 0)
@@ -87,6 +94,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         continue;
 
                     var w = new AssemblyPart(block, modularDefinition);
+                    ModularLog.Log($"{Grid.EntityId} Create part {w.PartIdUnsafe} BLOCK ADD");
                     // No further init work is needed.
                     // Not returning because a part can have multiple assemblies.
                 }
@@ -128,9 +136,8 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         #region Base Methods
 
-        public void UpdateOnceBeforeFrame(MyCubeGrid grid)
+        public void UpdateOnceBeforeFrame()
         {
-            Grid = grid;
             if (Grid.Physics == null)
                 return;
 
@@ -191,7 +198,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
 
         public void Close()
         {
-            if (Grid.Physics == null)
+            if (Grid?.Physics == null)
                 return;
 
             var toRemove = new List<AssemblyPart>();

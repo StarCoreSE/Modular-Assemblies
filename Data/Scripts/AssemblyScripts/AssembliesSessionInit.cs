@@ -106,10 +106,13 @@ namespace Modular_Assemblies.AssemblyScripts
             if (g == null || GridAssemblyLogics.ContainsKey(g))
                 return;
 
-            GridAssemblyLogic l = new GridAssemblyLogic();
+            GridAssemblyLogic l = new GridAssemblyLogic(g);
             GridAssemblyLogics.Add(g, l);
             GridAssemblyLogicsList.Add(l);
-            l.UpdateOnceBeforeFrame(g);
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                l.UpdateOnceBeforeFrame();
+            });
         }
 
         private void OnEntityRemove(IMyEntity e)

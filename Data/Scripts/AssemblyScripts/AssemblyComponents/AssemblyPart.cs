@@ -12,10 +12,16 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
     /// </summary>
     public class AssemblyPart
     {
+        private static int PartCountUnsafe = 0;
+
         private readonly GridAssemblyLogic _gridLogic;
         private PhysicalAssembly _memberAssembly;
         public ModularDefinition AssemblyDefinition;
         public IMyCubeBlock Block;
+        /// <summary>
+        /// NOT SYNCED IN ANY WAY
+        /// </summary>
+        public readonly int PartIdUnsafe = PartCountUnsafe++;
 
         public HashSet<AssemblyPart> ConnectedParts = new HashSet<AssemblyPart>();
         public bool IsBaseBlock;
@@ -32,7 +38,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
             _gridLogic = AssemblyPartManager.I.AllGridLogics[block.CubeGrid];
 
             if (_gridLogic.AllAssemblyParts[AssemblyDefinition].ContainsKey(block))
-                return;
+                throw new Exception($"Attempted to duplicate block {block.EntityId}");
 
             _gridLogic.AllAssemblyParts[AssemblyDefinition].Add(block, this);
 
