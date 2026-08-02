@@ -45,7 +45,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         continue;
                     AssemblyPart part = new AssemblyPart(block, def);
                     newParts.Add(part);
-                    ModularLog.Log($"{Grid.EntityId} Create part {part.PartIdUnsafe} STORAGE");
+                    //ModularLog.Log($"{Grid.EntityId} Create part {part.PartIdUnsafe} STORAGE");
                 }
 
                 if (newParts.Count == 0)
@@ -94,7 +94,7 @@ namespace Modular_Assemblies.AssemblyScripts.AssemblyComponents
                         continue;
 
                     var w = new AssemblyPart(block, modularDefinition);
-                    ModularLog.Log($"{Grid.EntityId} Create part {w.PartIdUnsafe} BLOCK ADD");
+                    //ModularLog.Log($"{Grid.EntityId} Create part {w.PartIdUnsafe} BLOCK ADD");
                     // No further init work is needed.
                     // Not returning because a part can have multiple assemblies.
                 }
